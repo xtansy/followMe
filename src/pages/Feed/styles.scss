@@ -1,0 +1,17 @@
+.ant-layout {
+  background: #f0f2f5;
+}
+
+.ant-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.ant-image {
+  display: block;
+}
