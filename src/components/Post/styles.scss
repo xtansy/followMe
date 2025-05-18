@@ -1,0 +1,21 @@
+.post-card {
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+  }
+
+  .ant-card-body {
+    padding: 20px;
+  }
+
+  .ant-btn {
+    transition: transform 0.2s ease;
+    &:active {
+      transform: scale(1.2);
+    }
+  }
+}

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { List } from "antd";
 import { IPost } from "../../shared/types/entityTypes";
 import { IMAGE_URL_MOCK } from "../../shared/constants";
-
 import { Post } from "../../components";
 
 const mockPosts: IPost[] = [
@@ -44,17 +43,18 @@ export const Feed = () => {
   };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
-      <List
-        style={{ width: "55%" }}
-        dataSource={posts}
-        itemLayout="vertical"
-        renderItem={(post) => (
-          <List.Item key={post.id}>
-            <Post post={post} onLike={onLike} />
-          </List.Item>
-        )}
-      />
+    <div className="feed-page">
+      <div className="feed-container">
+        <List
+          dataSource={posts}
+          itemLayout="vertical"
+          renderItem={(post) => (
+            <List.Item key={post.id}>
+              <Post post={post} onLike={onLike} />
+            </List.Item>
+          )}
+        />
+      </div>
     </div>
   );
 };

@@ -13,6 +13,7 @@ export const Layout: FC<LayoutProps> = ({ header, footer }) => {
   return (
     <LayoutAnt
       style={{
+        background: "none",
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",

@@ -1,17 +1,13 @@
-.ant-layout {
-  background: #f0f2f5;
-}
+.feed-page {
+  position: relative;
+  min-height: 100vh;
+  background: #fafafa;
+  display: flex;
+  justify-content: center;
+  padding: 48px 16px;
 
-.ant-card {
-  border-radius: 12px;
-  overflow: hidden;
-  transition: box-shadow 0.3s;
-
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  .feed-container {
+    width: 100%;
+    max-width: 720px;
   }
-}
-
-.ant-image {
-  display: block;
 }

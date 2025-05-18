@@ -1,7 +1,8 @@
-import { Layout, Typography, Button, Space } from "antd";
+import { Layout, Typography, Button, Space, Avatar } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { LoginModal, RegisterModal } from "..";
+import { UserOutlined } from "@ant-design/icons";
 
 const { Header: HeaderAnt } = Layout;
 const { Title } = Typography;
@@ -10,6 +11,12 @@ export const Header = () => {
   const navigate = useNavigate();
   const [loginVisible, setLoginVisible] = useState(false);
   const [registerVisible, setRegisterVisible] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleProfileClick = () => {
+    navigate("/profile/1");
+  };
+
   return (
     <HeaderAnt
       style={{
@@ -29,13 +36,20 @@ export const Header = () => {
       <LoginModal
         visible={loginVisible}
         onClose={() => setLoginVisible(false)}
-        onSuccess={() => setLoginVisible(false)}
+        onSuccess={() => {
+          setLoginVisible(false);
+          setIsLoggedIn(true);
+        }}
       />
       <RegisterModal
         visible={registerVisible}
         onClose={() => setRegisterVisible(false)}
-        onSuccess={() => setRegisterVisible(false)}
+        onSuccess={() => {
+          setRegisterVisible(false);
+          setIsLoggedIn(true);
+        }}
       />
+
       <Title
         onClick={() => navigate("/")}
         level={3}
@@ -43,11 +57,27 @@ export const Header = () => {
       >
         FollowMe
       </Title>
+
       <Space>
-        <Button type="primary" onClick={() => setLoginVisible(true)}>
-          Вход
-        </Button>
-        <Button onClick={() => setRegisterVisible(true)}>Регистрация</Button>
+        {isLoggedIn ? (
+          <Button
+            type="link"
+            icon={<Avatar size="small" icon={<UserOutlined />} />}
+            onClick={handleProfileClick}
+            style={{ padding: "0 8px", height: 32 }}
+          >
+            Мой профиль
+          </Button>
+        ) : (
+          <>
+            <Button type="primary" onClick={() => setLoginVisible(true)}>
+              Вход
+            </Button>
+            <Button onClick={() => setRegisterVisible(true)}>
+              Регистрация
+            </Button>
+          </>
+        )}
       </Space>
     </HeaderAnt>
   );

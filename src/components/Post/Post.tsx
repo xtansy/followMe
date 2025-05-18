@@ -1,3 +1,5 @@
+import "./styles.scss";
+
 import { FC } from "react";
 import { Typography, Button, Card, Image } from "antd";
 import { type IPost } from "../../shared/types";
@@ -12,6 +14,7 @@ interface IPostProps {
 
 const LockedPost: FC<IPostProps> = ({ post }) => (
   <Card
+    className="post-card"
     style={{
       marginBottom: 24,
     }}
@@ -44,6 +47,7 @@ const LockedPost: FC<IPostProps> = ({ post }) => (
 
 const OpenPost: FC<IPostProps> = ({ post, onLike }) => (
   <Card
+    className="post-card"
     style={{ marginBottom: 24 }}
     cover={
       <Image
@@ -51,7 +55,7 @@ const OpenPost: FC<IPostProps> = ({ post, onLike }) => (
         alt="post image"
         src={post.files[0]}
         preview={false}
-        style={{ objectFit: "cover" }}
+        style={{ objectFit: "cover", borderRadius: "12px" }}
       />
     }
   >
