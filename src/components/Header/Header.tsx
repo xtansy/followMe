@@ -1,8 +1,16 @@
-import { Layout, Typography, Button, Space, Avatar } from "antd";
+import {
+  Layout,
+  Typography,
+  Button,
+  Space,
+  Avatar,
+  Dropdown,
+  Menu,
+} from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { LoginModal, RegisterModal } from "..";
-import { UserOutlined } from "@ant-design/icons";
+import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
 
 const { Header: HeaderAnt } = Layout;
 const { Title } = Typography;
@@ -13,9 +21,32 @@ export const Header = () => {
   const [registerVisible, setRegisterVisible] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const handleProfileClick = () => {
-    navigate("/profile/1");
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    navigate("/");
   };
+
+  const menu = (
+    <Menu>
+      <Menu.Item key="profile" onClick={() => navigate("/profile/1")}>
+        <Space>
+          <UserOutlined />
+          Мой профиль
+        </Space>
+      </Menu.Item>
+      <Menu.Divider />
+      <Menu.Item
+        key="logout"
+        onClick={handleLogout}
+        style={{ color: "#ff4d4f" }}
+      >
+        <Space>
+          <LogoutOutlined />
+          Выйти
+        </Space>
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <HeaderAnt
@@ -60,14 +91,21 @@ export const Header = () => {
 
       <Space>
         {isLoggedIn ? (
-          <Button
-            type="link"
-            icon={<Avatar size="small" icon={<UserOutlined />} />}
-            onClick={handleProfileClick}
-            style={{ padding: "0 8px", height: 32 }}
-          >
-            Мой профиль
-          </Button>
+          <Dropdown overlay={menu} trigger={["click"]}>
+            <Button
+              type="link"
+              style={{
+                padding: "0 8px",
+                height: 32,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              <Avatar size="small" icon={<UserOutlined />} />
+              <span style={{ color: "#1890ff" }}>Мой профиль</span>
+            </Button>
+          </Dropdown>
         ) : (
           <>
             <Button type="primary" onClick={() => setLoginVisible(true)}>
