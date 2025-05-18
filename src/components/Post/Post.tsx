@@ -14,9 +14,6 @@ const LockedPost: FC<IPostProps> = ({ post }) => (
   <Card
     style={{
       marginBottom: 24,
-      maxWidth: "700px",
-      position: "relative",
-      overflow: "hidden",
     }}
     cover={
       <div
@@ -47,7 +44,7 @@ const LockedPost: FC<IPostProps> = ({ post }) => (
 
 const OpenPost: FC<IPostProps> = ({ post, onLike }) => (
   <Card
-    style={{ marginBottom: 24, maxWidth: "700px" }}
+    style={{ marginBottom: 24 }}
     cover={
       <Image
         height={250}

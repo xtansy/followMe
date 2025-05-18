@@ -1,11 +1,13 @@
 import { Layout, Typography, Button, Space } from "antd";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { LoginModal, RegisterModal } from "..";
 
 const { Header: HeaderAnt } = Layout;
 const { Title } = Typography;
 
 export const Header = () => {
+  const navigate = useNavigate();
   const [loginVisible, setLoginVisible] = useState(false);
   const [registerVisible, setRegisterVisible] = useState(false);
   return (
@@ -34,7 +36,11 @@ export const Header = () => {
         onClose={() => setRegisterVisible(false)}
         onSuccess={() => setRegisterVisible(false)}
       />
-      <Title level={3} style={{ margin: 0, color: "#1890ff" }}>
+      <Title
+        onClick={() => navigate("/")}
+        level={3}
+        style={{ margin: 0, color: "#1890ff", cursor: "pointer" }}
+      >
         FollowMe
       </Title>
       <Space>
