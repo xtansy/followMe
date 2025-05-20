@@ -9,7 +9,7 @@ import {
 } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
+import { UserOutlined, LogoutOutlined, TeamOutlined } from "@ant-design/icons";
 import { observer } from "mobx-react-lite";
 
 import { LoginModal, RegisterModal } from "..";
@@ -32,6 +32,10 @@ export const Header = observer(() => {
 
   const onClickMyProfile = () => {
     navigate(`/profile/${userStore.userId}`);
+  };
+
+  const onClickUsers = () => {
+    navigate("/users");
   };
 
   const menu = (
@@ -96,6 +100,17 @@ export const Header = observer(() => {
       </Title>
 
       <Space>
+        {userStore.isAuthenticated && (
+          <Button
+            type="text"
+            icon={<TeamOutlined />}
+            onClick={onClickUsers}
+            style={{ color: "#1890ff" }}
+          >
+            Пользователи
+          </Button>
+        )}
+
         {userStore.isAuthenticated ? (
           <Dropdown overlay={menu} trigger={["click"]}>
             <Button

@@ -2,6 +2,7 @@ import { api } from "./instance";
 import type { IUserInfo, IPost } from "../types";
 import type {
   IFollowParams,
+  IGetAllUsersParams,
   IGetLentaPostsParams,
   IGetMyPostsParams,
   ILoginParams,
@@ -160,6 +161,15 @@ export const follow = async ({ userId }: IFollowParams) => {
 export const unfollow = async ({ userId }: IFollowParams) => {
   try {
     const { data } = await api.delete(`/api/follow/${userId}`);
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const getAllUsers = async ({ page }: IGetAllUsersParams) => {
+  try {
+    const { data } = await api.get(`/api/user/all/${page}`);
     return data;
   } catch (error) {
     return Promise.reject(error);

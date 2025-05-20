@@ -36,3 +36,7 @@ export interface IGetLentaPostsParams {
 export interface IFollowParams {
   userId: string; // на кого подписываемся
 }
+
+export interface IGetAllUsersParams {
+  page: number;
+}

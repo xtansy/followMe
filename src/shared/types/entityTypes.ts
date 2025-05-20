@@ -40,3 +40,12 @@ export interface IUserInfo {
   avatarFileId: string;
   isFollowed: boolean;
 }
+
+export type IUserInfoShort = Omit<
+  IUserInfo,
+  | "isFollowed"
+  | "publicationsCount"
+  | "followersCount"
+  | "followsCount"
+  | "subscriptionsCount"
+>;
