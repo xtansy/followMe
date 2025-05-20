@@ -31,7 +31,7 @@ const AuthorHeader: FC<{
   avatar: string;
   publishDate: string;
   userId: string;
-}> = ({ username, avatar, publishDate, userId }) => {
+}> = ({ username, publishDate, userId }) => {
   const navigate = useNavigate();
   const formattedDate = dayjs(publishDate).format("D MMMM YYYY в HH:mm");
   const relativeDate = dayjs(publishDate).fromNow();
@@ -47,8 +47,8 @@ const AuthorHeader: FC<{
     >
       <Avatar
         onClick={() => navigate(`/profile/${userId}`)}
-        src={avatar}
-        icon={!avatar && <UserOutlined />}
+        // src={avatar}
+        icon={<UserOutlined />}
         size="large"
         style={{ marginRight: 12, cursor: "pointer" }}
       />
@@ -86,29 +86,43 @@ export const PostLockedMessage: FC<PostLockedMessageProps> = ({
   return (
     <>
       <Card
-        type="inner"
-        style={{
-          marginTop: 24,
-          textAlign: "center",
-          background: "#f0f2f5",
-          border: "1px dashed #d9d9d9",
-        }}
+        className="post-card"
+        style={{}}
+        cover={
+          <AuthorHeader
+            userId={post.user.userId}
+            username={post.user.username}
+            avatar={post.user.avatarFileId}
+            publishDate={post.publishDate}
+          />
+        }
       >
-        <Space direction="vertical" size="middle">
-          <LockOutlined style={{ fontSize: 48, color: "#999" }} />
-          <Title level={4}>{post.title}</Title>
-          <Text>
-            Чтобы разблокировать этот пост, нужно оформить подписку{" "}
-            <Text strong>«{subscription.title}»</Text> за{" "}
-            <Text strong>
-              {convertPriceToNumber(subscription.price)} ₽ / мес
+        <div
+          style={{
+            padding: 24,
+            textAlign: "center",
+            background: "#fafafa",
+            borderTop: "1px dashed #d9d9d9",
+          }}
+        >
+          <Space direction="vertical" size="middle">
+            <LockOutlined style={{ fontSize: 48, color: "#999" }} />
+            <Title level={4} style={{ marginBottom: 0 }}>
+              {post.title}
+            </Title>
+            <Text>
+              Чтобы разблокировать этот пост, нужно оформить подписку <br />
+              <Text strong>«{subscription.title}»</Text> за{" "}
+              <Text strong>
+                {convertPriceToNumber(subscription.price)} ₽ / мес
+              </Text>
+              .
             </Text>
-            .
-          </Text>
-          <Button type="primary" onClick={() => setModalOpen(true)}>
-            Оформить подписку
-          </Button>
-        </Space>
+            <Button type="primary" onClick={() => setModalOpen(true)}>
+              Оформить подписку
+            </Button>
+          </Space>
+        </div>
       </Card>
 
       <ConfirmPayModal
@@ -157,7 +171,6 @@ const OpenPost: FC<IPostProps> = ({ post, onLike, isAuthenticated }) => {
   return (
     <Card
       className="post-card"
-      style={{ marginBottom: 24 }}
       cover={
         <>
           <AuthorHeader
