@@ -4,24 +4,26 @@ import {
   Form,
   Input,
   InputNumber,
-  Select,
-  Button,
   Typography,
+  Button,
+  Alert,
 } from "antd";
 
 import { type ISubscription } from "../../shared/types";
+import { convertNumberToPrice, convertPriceToNumber } from "../../shared/lib";
 
-const { Title } = Typography;
-const { Option } = Select;
+const { Title, Text } = Typography;
 
 interface ICreateSubscriptionModalProps {
   visible: boolean;
   onCancel: () => void;
   onCreate: (values: ISubscription) => void;
+  mostExpensiveSubscription: ISubscription;
 }
 
 export const CreateSubscriptionModal: FC<ICreateSubscriptionModalProps> = ({
   visible,
+  mostExpensiveSubscription,
   onCancel,
   onCreate,
 }) => {
@@ -32,7 +34,12 @@ export const CreateSubscriptionModal: FC<ICreateSubscriptionModalProps> = ({
     try {
       const values = await form.validateFields();
       setLoading(true);
-      onCreate(values);
+      const price = convertNumberToPrice(values.price);
+      onCreate({
+        ...values,
+        price,
+        level: mostExpensiveSubscription.level + 1,
+      });
       form.resetFields();
     } catch (err) {
       console.error("Ошибка валидации:", err);
@@ -66,7 +73,9 @@ export const CreateSubscriptionModal: FC<ICreateSubscriptionModalProps> = ({
         form={form}
         layout="vertical"
         requiredMark="optional"
-        initialValues={{ level: 0, price: 0 }}
+        initialValues={{
+          price: convertPriceToNumber(mostExpensiveSubscription.price),
+        }}
       >
         <Form.Item
           label="Название уровня"
@@ -90,27 +99,86 @@ export const CreateSubscriptionModal: FC<ICreateSubscriptionModalProps> = ({
         <Form.Item
           label="Цена (₽/мес)"
           name="price"
-          rules={[{ required: true, message: "Укажите цену подписки" }]}
+          rules={[
+            { required: true, message: "Укажите цену подписки" },
+            () => ({
+              validator(_, value) {
+                if (value === undefined || value === null) {
+                  return Promise.reject(new Error("Поле не может быть пустым"));
+                }
+                if (typeof value !== "number" || isNaN(value)) {
+                  return Promise.reject(
+                    new Error("Введите корректное числовое значение")
+                  );
+                }
+                if (
+                  value < convertPriceToNumber(mostExpensiveSubscription.price)
+                ) {
+                  return Promise.reject(
+                    new Error("Цена должна быть выше предыдущей подписки")
+                  );
+                }
+                if (value > 1_000_000) {
+                  return Promise.reject(new Error("Слишком большая сумма"));
+                }
+                const decimalPart = value.toString().split(".")[1];
+                if (decimalPart && decimalPart.length > 2) {
+                  return Promise.reject(
+                    new Error("Максимум 2 знака после запятой")
+                  );
+                }
+                return Promise.resolve();
+              },
+            }),
+          ]}
         >
-          <InputNumber
-            min={0}
+          <InputNumber<number>
             step={10}
+            precision={2}
             style={{ width: "100%" }}
-            placeholder="Например, 299"
+            placeholder="Например, 299 или 299.99"
+            formatter={(value) => {
+              if (value == null) return "";
+              return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+            }}
+            parser={(value) => {
+              if (typeof value !== "string") return 0;
+              const clean = value.replace(/\s/g, "").replace(",", ".");
+              const normalized = clean.replace(/^0+(?!\.)/, "") || "0";
+              return parseFloat(normalized);
+            }}
+            onKeyDown={(e) => {
+              const allowedKeys = [
+                "Backspace",
+                "Tab",
+                "ArrowLeft",
+                "ArrowRight",
+                "Delete",
+                "Home",
+                "End",
+                ".",
+                ",", // разрешаем разделитель
+              ];
+              const isNumber = /^[0-9]$/.test(e.key);
+              if (!isNumber && !allowedKeys.includes(e.key)) {
+                e.preventDefault();
+              }
+            }}
           />
         </Form.Item>
 
-        <Form.Item
-          label="Уровень доступа"
-          name="level"
-          rules={[{ required: true, message: "Выберите уровень доступа" }]}
-        >
-          <Select>
-            <Option value={0}>Для всех</Option>
-            <Option value={1}>Базовый уровень</Option>
-            <Option value={2}>Премиум уровень</Option>
-          </Select>
-        </Form.Item>
+        <Alert
+          message={
+            <Text>
+              Уровень новой подписки будет{" "}
+              <Text strong>{mostExpensiveSubscription.level + 1}</Text> (выше,
+              чем "<Text strong>{mostExpensiveSubscription.title}</Text>" с
+              уровнем <Text strong>{mostExpensiveSubscription.level}</Text>)
+            </Text>
+          }
+          type="info"
+          showIcon
+        />
       </Form>
     </Modal>
   );

@@ -3,46 +3,83 @@ import "./styles.scss";
 import { useEffect, useState } from "react";
 import { List } from "antd";
 
-import { type IPost } from "../../shared/types/entityTypes";
-import { IMAGE_URL_MOCK } from "../../shared/constants";
+import { ISubscription, type IPost } from "../../shared/types/entityTypes";
 import { Post, CreatePostWidget } from "../../components";
-import { createPost, type IPostParams, testToken } from "../../shared/api";
+import {
+  createPost,
+  getSubscriptions,
+  type IPostParams,
+  getLentaPosts,
+} from "../../shared/api";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../store/context";
+import { convertNumberToPrice } from "../../shared/lib";
 
-const mockPosts: IPost[] = [
+// const mockPosts: IPost[] = [
+//   {
+//     id: "1",
+//     title: "Доступный пост",
+//     availableBody: "это большой доступный всем пост...",
+//     likesCount: 42,
+//     liked: false,
+//     files: [],
+//     fullContent: true,
+//     user: {
+//       userId: "1",
+//       username: "andrey_dev",
+//       avatarFileId: IMAGE_URL_MOCK,
+//     },
+//     publishDate: "2025-05-20T17:34:56.767186909Z",
+//     subscription: {
+//       title: "string",
+//       description: "string",
+//       level: 1,
+//       price: {
+//         units: 0,
+//         nanos: 0,
+//       },
+//     },
+//   },
+//   {
+//     id: "2",
+//     title: "Закрытый пост",
+//     availableBody: "это маленький, недоступный никому закрытый пост",
+//     likesCount: 89,
+//     liked: false,
+//     files: [],
+//     user: {
+//       userId: "2",
+//       username: "hidden_author",
+//       avatarFileId: IMAGE_URL_MOCK,
+//     },
+//     publishDate: "2025-05-20T17:34:56.767186909Z",
+//     subscription: {
+//       title: "string",
+//       description: "string",
+//       level: 1,
+//       price: {
+//         units: 0,
+//         nanos: 0,
+//       },
+//     },
+//   },
+// ];
+
+const SUBSCRIPTIONS_MOCK: ISubscription[] = [
   {
-    id: "1",
-    title: "Доступный пост",
-    availableBody: "это большой доступный всем пост...",
-    likesCount: 42,
-    liked: false,
-    files: [IMAGE_URL_MOCK],
-    fullContent: true,
-    user: {
-      username: "andrey_dev",
-      avatarFileId: IMAGE_URL_MOCK,
-    },
-    publishDate: "2025-05-20T17:34:56.767186909Z",
-  },
-  {
-    id: "2",
-    title: "Закрытый пост",
-    availableBody: "это маленький, недоступный никому закрытый пост",
-    likesCount: 89,
-    liked: false,
-    files: [IMAGE_URL_MOCK],
-    user: {
-      username: "hidden_author",
-      avatarFileId: IMAGE_URL_MOCK,
-    },
-    publishDate: "2025-05-20T17:34:56.767186909Z",
+    title: "Базовый",
+    description: "Доступ к закрытым постам и благодарность автора",
+    price: convertNumberToPrice(100),
+    level: 0,
   },
 ];
 
 export const Feed = observer(() => {
   const { userStore } = useStore();
-  const [posts, setPosts] = useState<IPost[]>(mockPosts);
+  const [posts, setPosts] = useState<IPost[]>([]);
+
+  const [subscriptions, setSubscriptions] =
+    useState<ISubscription[]>(SUBSCRIPTIONS_MOCK);
 
   const onLike = (postId: string) => {
     setPosts((prevPosts) =>
@@ -59,20 +96,35 @@ export const Feed = observer(() => {
   };
 
   const handleCreatePost = (newPost: IPostParams) => {
-    createPost(newPost).then((res) => {
-      console.log("@@ res", res);
-    });
+    createPost(newPost);
+  };
+
+  const fetchSubscriptions = (id: string | null) => {
+    if (id) {
+      getSubscriptions(id).then((fetchedSubscriptions) => {
+        setSubscriptions((old) => [...old, ...fetchedSubscriptions]);
+      });
+    }
   };
 
   useEffect(() => {
-    testToken();
+    fetchSubscriptions(userStore.userId);
+  }, [userStore.userId]);
+
+  useEffect(() => {
+    getLentaPosts({ page: 1 }).then((fetchedPosts) => {
+      setPosts(fetchedPosts);
+    });
   }, []);
 
   return (
     <div className="feed-page">
       <div className="feed-container">
         {userStore.isAuthenticated && (
-          <CreatePostWidget onSubmit={handleCreatePost} />
+          <CreatePostWidget
+            onSubmit={handleCreatePost}
+            subscriptions={subscriptions}
+          />
         )}
         <List
           dataSource={posts}

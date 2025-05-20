@@ -5,12 +5,17 @@ import { PlusOutlined } from "@ant-design/icons";
 import { CreatePostModal } from "..";
 
 import { type IPostParams } from "../../shared/api";
+import { ISubscription } from "../../shared/types";
 
 interface ICreatePostWidgetProps {
   onSubmit: (values: IPostParams) => void;
+  subscriptions: ISubscription[];
 }
 
-export const CreatePostWidget: FC<ICreatePostWidgetProps> = ({ onSubmit }) => {
+export const CreatePostWidget: FC<ICreatePostWidgetProps> = ({
+  onSubmit,
+  subscriptions,
+}) => {
   const [createPostVisible, setCreatePostVisible] = useState(false);
 
   return (
@@ -24,6 +29,7 @@ export const CreatePostWidget: FC<ICreatePostWidgetProps> = ({ onSubmit }) => {
         Создать пост
       </Button>
       <CreatePostModal
+        subscriptions={subscriptions}
         visible={createPostVisible}
         onCancel={() => setCreatePostVisible(false)}
         onSubmit={onSubmit}

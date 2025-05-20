@@ -17,7 +17,7 @@ export const Layout: FC<LayoutProps> = ({ header, footer }) => {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        maxWidth: 1300,
+        maxWidth: 1490,
         margin: "0 auto",
         width: "100%",
       }}

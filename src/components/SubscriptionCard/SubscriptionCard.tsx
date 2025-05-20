@@ -4,6 +4,7 @@ import { Button, Typography, Card } from "antd";
 
 import { ConfirmPayModal } from "..";
 import { type ISubscription } from "../../shared/types";
+import { convertPriceToNumber } from "../../shared/lib";
 
 const { Text } = Typography;
 
@@ -55,7 +56,9 @@ export const SubscriptionCard: FC<ISubscriptionCardProps> = ({
           style={{ marginTop: 12 }}
           disabled={isSubscribed}
         >
-          {isSubscribed ? "Уже подписаны" : `Подписаться — ${price}₽`}
+          {isSubscribed
+            ? "Уже подписаны"
+            : `Подписаться — ${convertPriceToNumber(price)}₽`}
         </Button>
       )}
       <ConfirmPayModal

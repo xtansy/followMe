@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Space, Card } from "antd";
 
-import { IPost, ISubscription, IUserInfo } from "../../shared/types";
+import type { IPost, ISubscription, IUserInfo } from "../../shared/types";
 import {
   SubscriptionCard,
   Post,
@@ -9,70 +9,96 @@ import {
   ProfileCard,
   CreateSubscriptionWidget,
 } from "../../components";
-import { IMAGE_URL_MOCK } from "../../shared/constants";
-import { getUser } from "../../shared/api";
+import {
+  createPost,
+  createSubscription,
+  getMyPosts,
+  getSubscriptions,
+  getUser,
+  IPostParams,
+  ISubscriptionParams,
+} from "../../shared/api";
 import { useParams } from "react-router";
+import { convertNumberToPrice } from "../../shared/lib";
+import { useStore } from "../../store/context";
+import { observer } from "mobx-react-lite";
 
-const POSTS_MOCK: IPost[] = [
-  {
-    id: "1",
-    title: "Доступный пост",
-    availableBody: "это большой доступный всем пост...",
-    likesCount: 42,
-    liked: false,
-    files: [IMAGE_URL_MOCK],
-    fullContent: true,
-    user: {
-      username: "andrey_dev",
-      avatarFileId: IMAGE_URL_MOCK,
-    },
-    publishDate: "2025-05-20T17:34:56.767186909Z",
-  },
-  {
-    id: "2",
-    title: "Закрытый пост",
-    availableBody: "это маленький, недоступный никому закрытый пост",
-    likesCount: 89,
-    liked: false,
-    files: [IMAGE_URL_MOCK],
-    user: {
-      username: "hidden_author",
-      avatarFileId: IMAGE_URL_MOCK,
-    },
-    publishDate: "2025-05-20T17:34:56.767186909Z",
-  },
-];
+// const POSTS_MOCK: IPost[] = [
+//   {
+//     id: "1",
+//     title: "Доступный пост",
+//     availableBody: "это большой доступный всем пост...",
+//     likesCount: 42,
+//     liked: false,
+//     files: [],
+//     fullContent: true,
+//     user: {
+//       username: "andrey_dev",
+//       avatarFileId: IMAGE_URL_MOCK,
+//       userId: "213",
+//     },
+//     publishDate: "2025-05-20T17:34:56.767186909Z",
+//     subscription: {
+//       title: "string",
+//       description: "string",
+//       level: 1,
+//       price: {
+//         units: 0,
+//         nanos: 0,
+//       },
+//     },
+//   },
+//   {
+//     id: "2",
+//     title: "Закрытый пост",
+//     availableBody: "это маленький, недоступный никому закрытый пост",
+//     likesCount: 89,
+//     liked: false,
+//     files: [],
+//     user: {
+//       username: "hidden_author",
+//       avatarFileId: IMAGE_URL_MOCK,
+//       userId: "213",
+//     },
+//     publishDate: "2025-05-20T17:34:56.767186909Z",
+//     subscription: {
+//       title: "string",
+//       description: "string",
+//       level: 1,
+//       price: {
+//         units: 0,
+//         nanos: 0,
+//       },
+//     },
+//   },
+// ];
 
 const SUBSCRIPTIONS_MOCK: ISubscription[] = [
   {
-    title: "Поддержка",
+    title: "Базовый",
     description: "Доступ к закрытым постам и благодарность автора",
-    price: 100,
+    price: convertNumberToPrice(100),
     level: 0,
-  },
-  {
-    title: "Премиум",
-    description:
-      "Всё вышеперечисленное + эксклюзивные материалы и участие в опросах",
-    price: 300,
-    level: 3,
-  },
-  {
-    title: "Легенда",
-    description: "Все преимущества + личное общение с автором и бонусы",
-    price: 1_000,
-    level: 4,
   },
 ];
 
-export const FeedProfile = () => {
+export const FeedProfile = observer(() => {
+  const { userStore } = useStore();
   const { id } = useParams();
 
   const [userInfo, setUserInfo] = useState<IUserInfo | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [posts, setPosts] = useState<IPost[]>(POSTS_MOCK);
+  const [posts, setPosts] = useState<IPost[]>([]);
+  const [subscriptions, setSubscriptions] = useState<ISubscription[]>([]);
 
-  const isOwnProfile = userInfo?.userId === id;
+  const isOwnProfile = userStore.userId === id;
+
+  const mostExpensiveSubscription =
+    subscriptions.length > 0
+      ? subscriptions.reduce((max, current) =>
+          current.level > max.level ? current : max
+        )
+      : SUBSCRIPTIONS_MOCK[0];
 
   const onSubscribe = () => {
     setIsSubscribed(!isSubscribed);
@@ -92,14 +118,46 @@ export const FeedProfile = () => {
     );
   };
 
-  const onSubmitPost = (postData: any) => {
-    console.log("@@ postData", postData);
+  const onSubmitPost = (newPost: IPostParams) => {
+    createPost(newPost).then(() => {
+      fetchMyPosts(id);
+    });
+  };
+
+  const onSubmitSubscription = async (subscription: ISubscriptionParams) => {
+    return createSubscription(subscription).then(() => fetchSubscriptions(id));
+  };
+
+  const fetchSubscriptions = (id: string | undefined) => {
+    if (id) {
+      getSubscriptions(id).then((fetchedSubscriptions) => {
+        setSubscriptions(fetchedSubscriptions);
+      });
+    }
+  };
+
+  const fetchMyPosts = (id: string | undefined) => {
+    if (id) {
+      getMyPosts({ ownUserId: id, page: 1 }).then((fetchedPosts) => {
+        setPosts(fetchedPosts);
+      });
+    } else {
+      setPosts([]);
+    }
   };
 
   useEffect(() => {
     if (id) {
       getUser(id).then((user) => setUserInfo(user));
     }
+  }, [id]);
+
+  useEffect(() => {
+    fetchMyPosts(id);
+  }, [id]);
+
+  useEffect(() => {
+    fetchSubscriptions(id);
   }, [id]);
 
   if (!userInfo) return null;
@@ -118,11 +176,13 @@ export const FeedProfile = () => {
       {/* Левая панель профиля */}
       <div style={{ width: 300, flexShrink: 0 }}>
         <ProfileCard
+          subscriptionsCount={userInfo.subscriptionsCount}
+          followersCount={userInfo.followersCount}
           onSubscribe={onSubscribe}
           isSubscribed={isSubscribed}
-          postsLength={POSTS_MOCK.length}
+          postsLength={userInfo.publicationsCount}
           isOwnProfile={isOwnProfile}
-          username={"Username"}
+          username={userInfo.username}
         />
       </div>
 
@@ -130,7 +190,10 @@ export const FeedProfile = () => {
       <div style={{ flexGrow: 1, flexShrink: 0 }}>
         {isOwnProfile && (
           <div style={{ marginBottom: "10px" }}>
-            <CreatePostWidget onSubmit={onSubmitPost} />
+            <CreatePostWidget
+              onSubmit={onSubmitPost}
+              subscriptions={subscriptions}
+            />
           </div>
         )}
         {posts.map((post) => (
@@ -139,8 +202,13 @@ export const FeedProfile = () => {
       </div>
 
       {/* Правая панель с уровнями подписки */}
-      <div>
-        {isOwnProfile && <CreateSubscriptionWidget />}
+      <div style={{ flexShrink: 0 }}>
+        {isOwnProfile && subscriptions.length < 5 && (
+          <CreateSubscriptionWidget
+            onSubmit={onSubmitSubscription}
+            mostExpensiveSubscription={mostExpensiveSubscription}
+          />
+        )}
         <Card
           title="Уровни подписки"
           style={{
@@ -150,7 +218,7 @@ export const FeedProfile = () => {
           }}
         >
           <Space direction="vertical" style={{ maxWidth: "250px" }}>
-            {SUBSCRIPTIONS_MOCK.map((subscription) => (
+            {subscriptions.map((subscription) => (
               <SubscriptionCard
                 {...subscription}
                 isSubscribed={isSubscribed}
@@ -163,4 +231,4 @@ export const FeedProfile = () => {
       </div>
     </div>
   );
-};
+});

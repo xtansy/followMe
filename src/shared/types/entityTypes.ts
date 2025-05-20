@@ -1,3 +1,8 @@
+export interface IFile {
+  fileId: string;
+  contentType: string;
+}
+
 export interface IPost {
   id: string;
   title: string;
@@ -5,18 +10,23 @@ export interface IPost {
   likesCount: number;
   fullContent?: boolean;
   liked: boolean;
-  files: string[];
+  files: IFile[];
   user: {
     username: string;
     avatarFileId: string;
+    userId: string;
   };
   publishDate: string;
+  subscription: ISubscription;
 }
 
 export interface ISubscription {
   title: string;
   description: string;
-  price: number;
+  price: {
+    units: number;
+    nanos: number;
+  };
   level: number;
 }
 

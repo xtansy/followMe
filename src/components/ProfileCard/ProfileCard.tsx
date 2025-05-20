@@ -10,6 +10,8 @@ interface IProfileCardProps {
   onSubscribe?: () => void;
   isSubscribed?: boolean;
   postsLength: number;
+  subscriptionsCount: number;
+  followersCount: number;
 }
 
 export const ProfileCard: FC<IProfileCardProps> = ({
@@ -18,6 +20,8 @@ export const ProfileCard: FC<IProfileCardProps> = ({
   isSubscribed = false,
   username = "Username",
   postsLength = 2,
+  subscriptionsCount,
+  followersCount,
 }) => {
   return (
     <Card
@@ -37,7 +41,6 @@ export const ProfileCard: FC<IProfileCardProps> = ({
         <Title level={4} style={{ marginBottom: 0 }}>
           {username}
         </Title>
-        <Text type="secondary">@{username.toLowerCase()}</Text>
 
         {!isOwnProfile && (
           <Space>
@@ -56,13 +59,13 @@ export const ProfileCard: FC<IProfileCardProps> = ({
         <Space split={<div style={{ width: 1, background: "#f0f0f0" }} />}>
           <div style={{ textAlign: "center" }}>
             <Title level={5} style={{ margin: 0 }}>
-              1.2K
+              {subscriptionsCount}
             </Title>
             <Text type="secondary">Подписчиков</Text>
           </div>
           <div style={{ textAlign: "center" }}>
             <Title level={5} style={{ margin: 0 }}>
-              456
+              {followersCount}
             </Title>
             <Text type="secondary">Подписок</Text>
           </div>

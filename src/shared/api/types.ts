@@ -13,3 +13,22 @@ export interface IPostParams {
   requiredLevel: number;
   files: File[];
 }
+
+export interface IGetMyPostsParams {
+  ownUserId: string;
+  page: number;
+}
+
+export interface ISubscriptionParams {
+  title: string;
+  description: string;
+  price: {
+    units: number;
+    nanos: number;
+  };
+  level: number;
+}
+
+export interface IGetLentaPostsParams {
+  page: number;
+}

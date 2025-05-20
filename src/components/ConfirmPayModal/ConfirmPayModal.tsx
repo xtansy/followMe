@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 import { Modal, Typography, Button, Descriptions } from "antd";
 
 import { type ISubscription } from "../../shared/types";
+import { convertPriceToNumber } from "../../shared/lib";
 
 const { Title } = Typography;
 
@@ -39,7 +40,7 @@ export const ConfirmPayModal: FC<ConfirmPayModalProps> = ({
           Отмена
         </Button>,
         <Button key="pay" type="primary" loading={loading} onClick={handlePay}>
-          Оплатить {subscription.price} ₽
+          Оплатить {convertPriceToNumber(subscription.price)} ₽
         </Button>,
       ]}
       width={500}
@@ -58,7 +59,7 @@ export const ConfirmPayModal: FC<ConfirmPayModalProps> = ({
           Уровень: {subscription.level}
         </Descriptions.Item>
         <Descriptions.Item label="Цена">
-          {subscription.price} ₽ / месяц
+          {convertPriceToNumber(subscription.price)} ₽ / месяц
         </Descriptions.Item>
       </Descriptions>
     </Modal>

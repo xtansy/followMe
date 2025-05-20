@@ -1,16 +1,38 @@
 import "./styles.scss";
 
-import { useState } from "react";
+import { FC, useState } from "react";
 
 import { CreateSubscriptionModal } from "..";
 import { CrownFilled } from "@ant-design/icons";
-import { Button } from "antd";
+import { Button, message } from "antd";
+import { type ISubscription } from "../../shared/types";
+import { ISubscriptionParams } from "../../shared/api";
 
-export const CreateSubscriptionWidget = () => {
+interface ICreateSubscriptionWidgetProps {
+  mostExpensiveSubscription: ISubscription;
+  onSubmit: (subscription: ISubscriptionParams) => Promise<any>;
+}
+
+export const CreateSubscriptionWidget: FC<ICreateSubscriptionWidgetProps> = ({
+  mostExpensiveSubscription,
+  onSubmit,
+}) => {
+  const [messageApi, contextHolder] = message.useMessage();
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  const onSubmitDecorator = (subscription: ISubscriptionParams) => {
+    onSubmit(subscription)
+      .then(() => messageApi.success("Успех!"))
+      .catch(() => messageApi.error("Неудача!"))
+      .finally(() => {
+        setIsOpen(false);
+      });
+  };
 
   return (
     <>
+      {contextHolder}
       <Button
         style={{ marginBottom: "7px" }}
         className="subscribe-button"
@@ -23,12 +45,10 @@ export const CreateSubscriptionWidget = () => {
       </Button>
 
       <CreateSubscriptionModal
+        mostExpensiveSubscription={mostExpensiveSubscription}
         visible={isOpen}
         onCancel={() => setIsOpen(false)}
-        onCreate={(subscription) => {
-          console.log("Создана подписка:", subscription);
-          setIsOpen(false);
-        }}
+        onCreate={onSubmitDecorator}
       />
     </>
   );

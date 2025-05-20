@@ -1,18 +1,22 @@
-import { FC } from "react";
-import { Typography, Button, Card, Image, Avatar } from "antd";
+import { FC, useEffect, useState } from "react";
+import { Typography, Button, Card, Image, Avatar, Spin, Space } from "antd";
 import {
   HeartFilled,
-  LockFilled,
   HeartOutlined,
   UserOutlined,
+  LockOutlined,
 } from "@ant-design/icons";
-import { type IPost } from "../../shared/types";
+import { ISubscription, type IPost } from "../../shared/types";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import "dayjs/locale/ru"; // или другой язык по необходимости
+import "dayjs/locale/ru";
+import { getPostFiles } from "../../shared/api";
+import { useNavigate } from "react-router";
+import { convertPriceToNumber } from "../../shared/lib";
+import { ConfirmPayModal } from "../ConfirmPayModal/ConfirmPayModal";
 
 dayjs.extend(relativeTime);
-dayjs.locale("ru"); // установите нужную локаль
+dayjs.locale("ru");
 
 const { Text, Title } = Typography;
 
@@ -26,7 +30,9 @@ const AuthorHeader: FC<{
   username: string;
   avatar: string;
   publishDate: string;
-}> = ({ username, avatar, publishDate }) => {
+  userId: string;
+}> = ({ username, avatar, publishDate, userId }) => {
+  const navigate = useNavigate();
   const formattedDate = dayjs(publishDate).format("D MMMM YYYY в HH:mm");
   const relativeDate = dayjs(publishDate).fromNow();
 
@@ -40,13 +46,20 @@ const AuthorHeader: FC<{
       }}
     >
       <Avatar
+        onClick={() => navigate(`/profile/${userId}`)}
         src={avatar}
         icon={!avatar && <UserOutlined />}
         size="large"
-        style={{ marginRight: 12 }}
+        style={{ marginRight: 12, cursor: "pointer" }}
       />
       <div style={{ display: "flex", flexDirection: "column" }}>
-        <Text strong>{username}</Text>
+        <Text
+          style={{ cursor: "pointer" }}
+          onClick={() => navigate(`/profile/${userId}`)}
+          strong
+        >
+          {username}
+        </Text>
         <Text type="secondary" style={{ fontSize: 12 }}>
           <span title={formattedDate}>{relativeDate}</span>
         </Text>
@@ -55,92 +68,145 @@ const AuthorHeader: FC<{
   );
 };
 
-const LockedPost: FC<IPostProps> = ({ post }) => (
-  <Card
-    className="post-card"
-    style={{ marginBottom: 24 }}
-    cover={
-      <>
-        <AuthorHeader
-          username={post.user.username}
-          avatar={post.user.avatarFileId}
-          publishDate={post.publishDate}
-        />
-        <div
-          style={{
-            height: 250,
-            background: "linear-gradient(135deg, #f0f2f5 0%, #d9d9d9 100%)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div style={{ textAlign: "center" }}>
-            <LockFilled style={{ fontSize: 48, color: "#bfbfbf" }} />
-            <Title level={4} style={{ marginTop: 16, color: "#8c8c8c" }}>
-              {post.title}
-            </Title>
-          </div>
-        </div>
-      </>
-    }
-  >
-    <div style={{ padding: 16 }}>
-      <Text type="secondary" strong>
-        Для просмотра требуется подписка
-      </Text>
-    </div>
-  </Card>
-);
+interface PostLockedMessageProps {
+  subscription: ISubscription;
+  channelName: string;
+  onSubscriptionConfirmed?: () => void;
+  post: IPost;
+}
 
-const OpenPost: FC<IPostProps> = ({ post, onLike, isAuthenticated }) => (
-  <Card
-    className="post-card"
-    style={{ marginBottom: 24 }}
-    cover={
-      <>
-        <AuthorHeader
-          username={post.user.username}
-          avatar={post.user.avatarFileId}
-          publishDate={post.publishDate}
-        />
-        <Image
-          height={250}
-          alt="post image"
-          src={post.files[0]}
-          preview={false}
-          style={{ objectFit: "cover", borderRadius: "8px 8px 0 0" }}
-        />
-      </>
-    }
-  >
-    <Title level={4}>{post.title}</Title>
-    <Text>{post.availableBody}</Text>
-    {isAuthenticated && (
-      <div
+export const PostLockedMessage: FC<PostLockedMessageProps> = ({
+  subscription,
+  channelName,
+  onSubscriptionConfirmed,
+  post,
+}) => {
+  const [modalOpen, setModalOpen] = useState(false);
+
+  return (
+    <>
+      <Card
+        type="inner"
         style={{
-          marginTop: 16,
-          display: "flex",
-          alignItems: "center",
+          marginTop: 24,
+          textAlign: "center",
+          background: "#f0f2f5",
+          border: "1px dashed #d9d9d9",
         }}
       >
-        <Button
-          type="text"
-          icon={
-            post.liked ? (
-              <HeartFilled style={{ color: "#ff4d4f" }} />
-            ) : (
-              <HeartOutlined />
-            )
-          }
-          onClick={() => onLike?.(post.id)}
-        >
-          {post.likesCount}
-        </Button>
-      </div>
-    )}
-  </Card>
-);
+        <Space direction="vertical" size="middle">
+          <LockOutlined style={{ fontSize: 48, color: "#999" }} />
+          <Title level={4}>{post.title}</Title>
+          <Text>
+            Чтобы разблокировать этот пост, нужно оформить подписку{" "}
+            <Text strong>«{subscription.title}»</Text> за{" "}
+            <Text strong>
+              {convertPriceToNumber(subscription.price)} ₽ / мес
+            </Text>
+            .
+          </Text>
+          <Button type="primary" onClick={() => setModalOpen(true)}>
+            Оформить подписку
+          </Button>
+        </Space>
+      </Card>
+
+      <ConfirmPayModal
+        visible={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onConfirm={() => {
+          setModalOpen(false);
+          onSubscriptionConfirmed?.();
+        }}
+        channelName={channelName}
+        subscription={subscription}
+      />
+    </>
+  );
+};
+
+const OpenPost: FC<IPostProps> = ({ post, onLike, isAuthenticated }) => {
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let currentUrls: string[] = [];
+
+    const loadFiles = async () => {
+      try {
+        setLoading(true);
+        const urls = await getPostFiles(post.files);
+        setImageUrls(urls);
+        currentUrls = urls;
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (post.files.length > 0) {
+      loadFiles();
+    }
+
+    return () => {
+      currentUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [post.files]);
+
+  if (loading) return <Spin />;
+
+  return (
+    <Card
+      className="post-card"
+      style={{ marginBottom: 24 }}
+      cover={
+        <>
+          <AuthorHeader
+            userId={post.user.userId}
+            username={post.user.username}
+            avatar={post.user.avatarFileId}
+            publishDate={post.publishDate}
+          />
+          {imageUrls.length > 0 ? (
+            <Image.PreviewGroup>
+              {imageUrls.map((url, index) => (
+                <Image
+                  key={post.files[index].fileId}
+                  height={250}
+                  alt="post image"
+                  src={url}
+                  style={{ objectFit: "cover", borderRadius: "8px 8px 0 0" }}
+                  preview={{
+                    mask: <span>Просмотр</span>,
+                  }}
+                />
+              ))}
+            </Image.PreviewGroup>
+          ) : null}
+        </>
+      }
+    >
+      <Title level={4}>{post.title}</Title>
+      <Text>{post.availableBody}</Text>
+      {isAuthenticated && (
+        <div style={{ marginTop: 16, display: "flex", alignItems: "center" }}>
+          <Button
+            type="text"
+            icon={
+              post.liked ? (
+                <HeartFilled style={{ color: "#ff4d4f" }} />
+              ) : (
+                <HeartOutlined />
+              )
+            }
+            onClick={() => onLike?.(post.id)}
+          >
+            {post.likesCount}
+          </Button>
+        </div>
+      )}
+    </Card>
+  );
+};
 
 export const Post: FC<IPostProps> = ({
   post,
@@ -150,6 +216,10 @@ export const Post: FC<IPostProps> = ({
   return post.fullContent ? (
     <OpenPost post={post} onLike={onLike} isAuthenticated={isAuthenticated} />
   ) : (
-    <LockedPost post={post} isAuthenticated={isAuthenticated} />
+    <PostLockedMessage
+      post={post}
+      subscription={post.subscription}
+      channelName={post.user.username}
+    />
   );
 };

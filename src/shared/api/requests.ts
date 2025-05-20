@@ -1,6 +1,13 @@
 import { api } from "./instance";
-import { type IUserInfo } from "../types";
-import type { ILoginParams, IPostParams, IRegisterParams } from "./types";
+import type { IUserInfo, IPost } from "../types";
+import type {
+  IGetLentaPostsParams,
+  IGetMyPostsParams,
+  ILoginParams,
+  IPostParams,
+  IRegisterParams,
+  ISubscriptionParams,
+} from "./types";
 
 export const login = async (
   params: ILoginParams
@@ -30,16 +37,6 @@ export const register = async (
   } catch (error) {
     console.log("@@ error", error);
 
-    return Promise.reject(error);
-  }
-};
-
-export const testToken = async () => {
-  try {
-    const { data } = await api("/api/publications/list/1");
-    console.log("@@ data", data);
-  } catch (error) {
-    console.log("@@ error", error);
     return Promise.reject(error);
   }
 };
@@ -74,6 +71,78 @@ export const createPost = async (postParams: IPostParams) => {
     return data;
   } catch (error) {
     console.log("@@ error", error);
+    return Promise.reject(error);
+  }
+};
+
+export const getMyPosts = async ({
+  ownUserId,
+  page,
+}: IGetMyPostsParams): Promise<IPost[]> => {
+  try {
+    const { data } = await api.get<IPost[]>(
+      `/api/publications/list/${ownUserId}/${page}`
+    );
+
+    return data;
+  } catch (error) {
+    console.log("@@ error", error);
+    return Promise.reject(error);
+  }
+};
+
+export const getFile = async (fileId: string): Promise<string> => {
+  try {
+    const response = await api.get(`/api/files/${fileId}`, {
+      responseType: "blob",
+    });
+
+    const blobUrl = URL.createObjectURL(response.data);
+    return blobUrl;
+  } catch (error) {
+    console.error("Error fetching file:", error);
+    return Promise.reject(error);
+  }
+};
+
+export const getPostFiles = async (
+  files: Array<{ fileId: string; contentType: string }>
+): Promise<string[]> => {
+  try {
+    const fileUrls = await Promise.all(
+      files.map((file) => getFile(file.fileId))
+    );
+    return fileUrls;
+  } catch (error) {
+    console.error("Error fetching post files:", error);
+    return Promise.reject(error);
+  }
+};
+
+export const getSubscriptions = async (userId: string) => {
+  try {
+    const { data } = await api(`/subscription/${userId}`);
+    return data;
+  } catch (error) {
+    console.error("Error fetching post files:", error);
+    return Promise.reject(error);
+  }
+};
+
+export const createSubscription = async (params: ISubscriptionParams) => {
+  try {
+    const { data } = await api.post("/subscription/createPlan", params);
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const getLentaPosts = async ({ page }: IGetLentaPostsParams) => {
+  try {
+    const { data } = await api.get<IPost[]>(`/api/publications/list/${page}`);
+    return data;
+  } catch (error) {
     return Promise.reject(error);
   }
 };

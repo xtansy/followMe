@@ -3,12 +3,14 @@ import { Modal, Form, Input, Button, Upload, Select, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import type { UploadFile, UploadChangeParam } from "antd/es/upload/interface";
 import { type IPostParams } from "../../shared/api";
+import { ISubscription } from "../../shared/types";
 
 const { TextArea } = Input;
 const { Option } = Select;
 
 interface ICreatePostModalProps {
   visible: boolean;
+  subscriptions: ISubscription[];
   onCancel: () => void;
   onSubmit: (values: IPostParams) => void;
 }
@@ -17,6 +19,7 @@ export const CreatePostModal: FC<ICreatePostModalProps> = ({
   visible,
   onCancel,
   onSubmit,
+  subscriptions,
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
@@ -107,9 +110,9 @@ export const CreatePostModal: FC<ICreatePostModalProps> = ({
           initialValue={0}
         >
           <Select>
-            <Option value={0}>Для всех</Option>
-            <Option value={1}>Базовый уровень</Option>
-            <Option value={2}>Премиум уровень</Option>
+            {subscriptions.map((item) => (
+              <Option value={item.level}>{item.title}</Option>
+            ))}
           </Select>
         </Form.Item>
 
