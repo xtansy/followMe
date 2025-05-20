@@ -38,4 +38,5 @@ export interface IUserInfo {
   publicationsCount: number;
   username: string;
   avatarFileId: string;
+  isFollowed: boolean;
 }

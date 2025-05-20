@@ -1,7 +1,7 @@
-import { FC } from "react";
-import { Avatar, Button, Typography, Space, Card } from "antd";
+import { FC, useState } from "react";
+import { Avatar, Button, Typography, Space, Card, message } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-
+import { follow, unfollow } from "../../shared/api";
 const { Title, Text } = Typography;
 
 interface IProfileCardProps {
@@ -12,6 +12,8 @@ interface IProfileCardProps {
   postsLength: number;
   subscriptionsCount: number;
   followersCount: number;
+  isFollowed?: boolean;
+  userId: string;
 }
 
 export const ProfileCard: FC<IProfileCardProps> = ({
@@ -22,7 +24,32 @@ export const ProfileCard: FC<IProfileCardProps> = ({
   postsLength = 2,
   subscriptionsCount,
   followersCount,
+  isFollowed = false,
+  userId,
 }) => {
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const [following, setFollowing] = useState(isFollowed);
+  const [loadingFollow, setLoadingFollow] = useState(false);
+
+  const handleFollowToggle = async () => {
+    setLoadingFollow(true);
+    try {
+      if (following) {
+        await unfollow({ userId });
+        messageApi.success(`Вы больше не отслеживаете ${username}`);
+      } else {
+        await follow({ userId });
+        messageApi.success(`Вы отслеживаете ${username}`);
+      }
+      setFollowing(!following);
+    } catch {
+      messageApi.error("Произошла ошибка");
+    } finally {
+      setLoadingFollow(false);
+    }
+  };
+
   return (
     <Card
       style={{
@@ -32,6 +59,7 @@ export const ProfileCard: FC<IProfileCardProps> = ({
         top: 32,
       }}
     >
+      {contextHolder}
       <Space direction="vertical" align="center" style={{ width: "100%" }}>
         <Avatar
           size={128}
@@ -47,12 +75,19 @@ export const ProfileCard: FC<IProfileCardProps> = ({
             <Button
               type={isSubscribed ? "default" : "primary"}
               onClick={() => onSubscribe?.()}
-              style={{ margin: "16px 0", width: "100%" }}
+              style={{ margin: "16px 0", width: 130 }}
             >
               {isSubscribed ? "Отписаться" : "Подписаться"}
             </Button>
 
-            <Button>Отслеживать</Button>
+            <Button
+              type={following ? "default" : "dashed"}
+              onClick={handleFollowToggle}
+              loading={loadingFollow}
+              style={{ width: 130 }}
+            >
+              {following ? "Не отслеживать" : "Отслеживать"}
+            </Button>
           </Space>
         )}
 

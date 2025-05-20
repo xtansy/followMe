@@ -1,6 +1,7 @@
 import { api } from "./instance";
 import type { IUserInfo, IPost } from "../types";
 import type {
+  IFollowParams,
   IGetLentaPostsParams,
   IGetMyPostsParams,
   ILoginParams,
@@ -141,6 +142,24 @@ export const createSubscription = async (params: ISubscriptionParams) => {
 export const getLentaPosts = async ({ page }: IGetLentaPostsParams) => {
   try {
     const { data } = await api.get<IPost[]>(`/api/publications/list/${page}`);
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const follow = async ({ userId }: IFollowParams) => {
+  try {
+    const { data } = await api.post(`/api/follow/${userId}`);
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const unfollow = async ({ userId }: IFollowParams) => {
+  try {
+    const { data } = await api.delete(`/api/follow/${userId}`);
     return data;
   } catch (error) {
     return Promise.reject(error);

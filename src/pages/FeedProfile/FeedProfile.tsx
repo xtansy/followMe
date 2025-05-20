@@ -176,6 +176,7 @@ export const FeedProfile = observer(() => {
       {/* Левая панель профиля */}
       <div style={{ width: 300, flexShrink: 0 }}>
         <ProfileCard
+          userId={userInfo.userId}
           subscriptionsCount={userInfo.subscriptionsCount}
           followersCount={userInfo.followersCount}
           onSubscribe={onSubscribe}
