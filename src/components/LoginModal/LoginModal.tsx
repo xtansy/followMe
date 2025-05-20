@@ -2,6 +2,8 @@ import { FC, useState } from "react";
 import { Modal, Form, Input, Button, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 
+import { userStore } from "../../store/UserStore";
+
 interface ILoginModalProps {
   visible: boolean;
   onClose: () => void;
@@ -13,6 +15,7 @@ export const LoginModal: FC<ILoginModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
@@ -21,16 +24,20 @@ export const LoginModal: FC<ILoginModalProps> = ({
     password: string;
   }) => {
     setLoading(true);
-    try {
-      console.log("Login data:", values);
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      message.success("Вход выполнен успешно!");
-      onSuccess();
-    } catch {
-      message.error("Ошибка входа. Проверьте данные.");
-    } finally {
-      setLoading(false);
-    }
+
+    userStore
+      .login(values)
+      .then(() => {
+        messageApi.success("Вход выполнен успешно!");
+        onSuccess();
+      })
+      .catch(() => {
+        messageApi.error("Ошибка входа. Проверьте данные");
+      })
+      .finally(() => {
+        setLoading(false);
+        form.resetFields();
+      });
   };
 
   return (
@@ -43,6 +50,7 @@ export const LoginModal: FC<ILoginModalProps> = ({
       width={400}
       bodyStyle={{ padding: "24px" }}
     >
+      {contextHolder}
       <Form form={form} onFinish={handleSubmit} layout="vertical">
         <Form.Item
           name="username"

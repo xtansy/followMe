@@ -9,26 +9,34 @@ import {
 } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { LoginModal, RegisterModal } from "..";
 import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
+import { observer } from "mobx-react-lite";
+
+import { LoginModal, RegisterModal } from "..";
+import { useStore } from "../../store/context";
 
 const { Header: HeaderAnt } = Layout;
 const { Title } = Typography;
 
-export const Header = () => {
+export const Header = observer(() => {
+  const { userStore } = useStore();
+
   const navigate = useNavigate();
   const [loginVisible, setLoginVisible] = useState(false);
   const [registerVisible, setRegisterVisible] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
     navigate("/");
+    userStore.logout();
+  };
+
+  const onClickMyProfile = () => {
+    navigate(`/profile/${userStore.userId}`);
   };
 
   const menu = (
     <Menu>
-      <Menu.Item key="profile" onClick={() => navigate("/profile/1")}>
+      <Menu.Item key="profile" onClick={onClickMyProfile}>
         <Space>
           <UserOutlined />
           Мой профиль
@@ -69,7 +77,6 @@ export const Header = () => {
         onClose={() => setLoginVisible(false)}
         onSuccess={() => {
           setLoginVisible(false);
-          setIsLoggedIn(true);
         }}
       />
       <RegisterModal
@@ -77,7 +84,6 @@ export const Header = () => {
         onClose={() => setRegisterVisible(false)}
         onSuccess={() => {
           setRegisterVisible(false);
-          setIsLoggedIn(true);
         }}
       />
 
@@ -90,7 +96,7 @@ export const Header = () => {
       </Title>
 
       <Space>
-        {isLoggedIn ? (
+        {userStore.isAuthenticated ? (
           <Dropdown overlay={menu} trigger={["click"]}>
             <Button
               type="link"
@@ -119,4 +125,4 @@ export const Header = () => {
       </Space>
     </HeaderAnt>
   );
-};
+});

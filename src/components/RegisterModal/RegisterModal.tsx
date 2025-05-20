@@ -2,6 +2,8 @@ import { FC, useState } from "react";
 import { Modal, Form, Input, Button, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 
+import { userStore } from "../../store/UserStore";
+
 interface IRegisterModalProps {
   visible: boolean;
   onClose: () => void;
@@ -13,6 +15,8 @@ export const RegisterModal: FC<IRegisterModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const [messageApi, contextHolder] = message.useMessage();
+
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
@@ -21,16 +25,21 @@ export const RegisterModal: FC<IRegisterModalProps> = ({
     password: string;
   }) => {
     setLoading(true);
-    try {
-      console.log("Register data:", values);
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      message.success("Регистрация прошла успешно!");
-      onSuccess();
-    } catch {
-      message.error("Ошибка регистрации. Попробуйте позже.");
-    } finally {
-      setLoading(false);
-    }
+    onSuccess();
+
+    userStore
+      .register(values)
+      .then(() => {
+        messageApi.success("Регистрация прошла успешно!");
+        onSuccess();
+      })
+      .catch(() => {
+        messageApi.error("Ошибка регистрации. Попробуйте позже.");
+      })
+
+      .finally(() => {
+        form.resetFields();
+      });
   };
 
   const validatePassword = ({ getFieldValue }: any) => ({
@@ -52,6 +61,7 @@ export const RegisterModal: FC<IRegisterModalProps> = ({
       width={400}
       bodyStyle={{ padding: "24px" }}
     >
+      {contextHolder}
       <Form form={form} onFinish={handleSubmit} layout="vertical">
         <Form.Item
           name="username"
