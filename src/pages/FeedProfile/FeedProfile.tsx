@@ -184,6 +184,7 @@ export const FeedProfile = observer(() => {
           postsLength={userInfo.publicationsCount}
           isOwnProfile={isOwnProfile}
           username={userInfo.username}
+          isFollowed={userInfo.isFollowed}
         />
       </div>
 
