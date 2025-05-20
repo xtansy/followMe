@@ -19,9 +19,9 @@ import {
   ISubscriptionParams,
 } from "../../shared/api";
 import { useParams } from "react-router";
-import { convertNumberToPrice } from "../../shared/lib";
 import { useStore } from "../../store/context";
 import { observer } from "mobx-react-lite";
+import { SUBSCRIPTIONS_MOCK } from "../../shared/constants";
 
 // const POSTS_MOCK: IPost[] = [
 //   {
@@ -73,15 +73,6 @@ import { observer } from "mobx-react-lite";
 //   },
 // ];
 
-const SUBSCRIPTIONS_MOCK: ISubscription[] = [
-  {
-    title: "Базовый",
-    description: "Доступ к закрытым постам и благодарность автора",
-    price: convertNumberToPrice(100),
-    level: 0,
-  },
-];
-
 export const FeedProfile = observer(() => {
   const { userStore } = useStore();
   const { id } = useParams();
@@ -89,16 +80,14 @@ export const FeedProfile = observer(() => {
   const [userInfo, setUserInfo] = useState<IUserInfo | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [posts, setPosts] = useState<IPost[]>([]);
-  const [subscriptions, setSubscriptions] = useState<ISubscription[]>([]);
+  const [subscriptions, setSubscriptions] =
+    useState<ISubscription[]>(SUBSCRIPTIONS_MOCK);
 
   const isOwnProfile = userStore.userId === id;
 
-  const mostExpensiveSubscription =
-    subscriptions.length > 0
-      ? subscriptions.reduce((max, current) =>
-          current.level > max.level ? current : max
-        )
-      : SUBSCRIPTIONS_MOCK[0];
+  const mostExpensiveSubscription = subscriptions.reduce((max, current) =>
+    current.level > max.level ? current : max
+  );
 
   const onSubscribe = () => {
     setIsSubscribed(!isSubscribed);
@@ -131,7 +120,7 @@ export const FeedProfile = observer(() => {
   const fetchSubscriptions = (id: string | undefined) => {
     if (id) {
       getSubscriptions(id).then((fetchedSubscriptions) => {
-        setSubscriptions(fetchedSubscriptions);
+        setSubscriptions([...SUBSCRIPTIONS_MOCK, ...fetchedSubscriptions]);
       });
     }
   };

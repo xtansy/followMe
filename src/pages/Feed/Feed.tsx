@@ -13,7 +13,7 @@ import {
 } from "../../shared/api";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../store/context";
-import { convertNumberToPrice } from "../../shared/lib";
+import { SUBSCRIPTIONS_MOCK } from "../../shared/constants";
 
 // const mockPosts: IPost[] = [
 //   {
@@ -64,15 +64,6 @@ import { convertNumberToPrice } from "../../shared/lib";
 //     },
 //   },
 // ];
-
-const SUBSCRIPTIONS_MOCK: ISubscription[] = [
-  {
-    title: "Базовый",
-    description: "Доступ к закрытым постам и благодарность автора",
-    price: convertNumberToPrice(100),
-    level: 0,
-  },
-];
 
 export const Feed = observer(() => {
   const { userStore } = useStore();
