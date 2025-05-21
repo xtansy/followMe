@@ -6,7 +6,6 @@ import {
   Avatar,
   Button,
   Space,
-  Divider,
   Badge,
 } from "antd";
 import {
@@ -14,6 +13,9 @@ import {
   StarOutlined,
   FireOutlined,
   UserOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -99,6 +101,38 @@ const getLevelInfo = (level: number) => {
   return { color: "purple", icon: <FireOutlined /> };
 };
 
+const getSubscriptionStatus = () => {
+  const now = new Date();
+  return {
+    willExpireIn: new Date(now.setDate(now.getDate() + 3)).toISOString(), // Через 3 дня
+    expiredAt: new Date(now.setDate(now.getDate() - 10)).toISOString(), // 10 дней назад
+    activeUntil: new Date(now.setDate(now.getDate() + 20)).toISOString(), // Через 20 дней
+  };
+};
+
+const formatDate = (dateString: string) => {
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+  return new Date(dateString).toLocaleDateString("ru-RU", options);
+};
+
+const getDaysLeft = (expirationDate: string) => {
+  const now = new Date();
+  const expireDate = new Date(expirationDate);
+  const diffTime = expireDate.getTime() - now.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+};
+
+const dayDeclension = (days: number) => {
+  if (days % 10 === 1 && days % 100 !== 11) return "день";
+  if ([2, 3, 4].includes(days % 10) && ![12, 13, 14].includes(days % 100))
+    return "дня";
+  return "дней";
+};
+
 export const MySubscriptions = () => {
   const [subscriptions] = useState<IMySubscription[]>(mockSubscriptions);
   const navigate = useNavigate();
@@ -111,20 +145,53 @@ export const MySubscriptions = () => {
     navigate(`/profile/${userId}`);
   };
 
+  const renderExpirationAlert = (expirationDate: string) => {
+    const daysLeft = getDaysLeft(expirationDate);
+
+    if (daysLeft < 0) {
+      return (
+        <Space>
+          <ExclamationCircleOutlined style={{ color: "#ff4d4f" }} />
+          <Text type="danger">
+            Подписка истекла {formatDate(expirationDate)}
+          </Text>
+        </Space>
+      );
+    }
+
+    if (daysLeft <= 7) {
+      return (
+        <Space>
+          <ClockCircleOutlined style={{ color: "#faad14" }} />
+          <Text type="warning">
+            Заканчивается через {daysLeft} {dayDeclension(daysLeft)}
+          </Text>
+        </Space>
+      );
+    }
+
+    return (
+      <Space>
+        <CheckCircleOutlined style={{ color: "#52c41a" }} />
+        <Text type="secondary">Активна до: {formatDate(expirationDate)}</Text>
+      </Space>
+    );
+  };
+
   return (
     <div style={{ maxWidth: 800, margin: "0 auto", padding: "24px" }}>
       <Title level={2} style={{ marginBottom: 24 }}>
         Мои подписки
       </Title>
 
-      <Card bordered={false}>
+      <Card>
         {subscriptions.length > 0 ? (
           <List
             itemLayout="vertical"
             dataSource={subscriptions}
             renderItem={({ subscription, user }) => {
               const levelInfo = getLevelInfo(subscription.level);
-
+              const status = getSubscriptionStatus();
               return (
                 <List.Item
                   key={user.userId}
@@ -150,6 +217,12 @@ export const MySubscriptions = () => {
                           </Text>
                         }
                       />
+                      {subscription.level !== 0 &&
+                        renderExpirationAlert(
+                          subscription.level >= 2 && subscription.level <= 3
+                            ? status.willExpireIn
+                            : status.expiredAt
+                        )}
                     </Space>
                   }
                 >
@@ -182,7 +255,6 @@ export const MySubscriptions = () => {
                       </Space>
                     }
                   />
-                  <Divider />
                 </List.Item>
               );
             }}
