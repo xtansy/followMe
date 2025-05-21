@@ -1,10 +1,21 @@
 import { FC, useEffect, useState } from "react";
-import { Typography, Button, Card, Image, Avatar, Spin, Space } from "antd";
+import {
+  Typography,
+  Button,
+  Card,
+  Image,
+  Avatar,
+  Spin,
+  Space,
+  Popconfirm,
+  message,
+} from "antd";
 import {
   HeartFilled,
   HeartOutlined,
   UserOutlined,
   LockOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { ISubscription, type IPost } from "../../shared/types";
 import dayjs from "dayjs";
@@ -14,6 +25,9 @@ import { getPostFiles } from "../../shared/api";
 import { useNavigate } from "react-router";
 import { convertPriceToNumber } from "../../shared/lib";
 import { ConfirmPayModal } from "../ConfirmPayModal/ConfirmPayModal";
+import { observer } from "mobx-react-lite";
+import { useStore } from "../../store/context";
+import { deleteMyPost } from "../../shared/api";
 
 dayjs.extend(relativeTime);
 dayjs.locale("ru");
@@ -24,6 +38,7 @@ interface IPostProps {
   post: IPost;
   onLike?: (id: string) => void;
   isAuthenticated?: boolean;
+  onDeletePost?: (id: string) => void;
 }
 
 const AuthorHeader: FC<{
@@ -139,95 +154,175 @@ export const PostLockedMessage: FC<PostLockedMessageProps> = ({
   );
 };
 
-const OpenPost: FC<IPostProps> = ({ post, onLike, isAuthenticated }) => {
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+export const OpenPost: FC<IPostProps> = observer(
+  ({ post, onLike, isAuthenticated, onDeletePost }) => {
+    const [messageApi, contextHolder] = message.useMessage();
 
-  useEffect(() => {
-    let currentUrls: string[] = [];
+    const { userStore } = useStore();
+    const isOwnPost = userStore.userId === post.user.userId;
 
-    const loadFiles = async () => {
+    const [imageUrls, setImageUrls] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+      let currentUrls: string[] = [];
+
+      const loadFiles = async () => {
+        try {
+          setLoading(true);
+          const urls = await getPostFiles(post.files);
+          setImageUrls(urls);
+          currentUrls = urls;
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      if (post.files.length > 0) {
+        loadFiles();
+      }
+
+      return () => {
+        currentUrls.forEach((url) => URL.revokeObjectURL(url));
+      };
+    }, [post.files]);
+
+    const handleDelete = async () => {
       try {
-        setLoading(true);
-        const urls = await getPostFiles(post.files);
-        setImageUrls(urls);
-        currentUrls = urls;
-      } finally {
-        setLoading(false);
+        onDeletePost?.(post.id);
+        await deleteMyPost(post.id);
+        messageApi.success("Пост удалён");
+      } catch {
+        messageApi.error("Не удалось удалить пост");
       }
     };
 
-    if (post.files.length > 0) {
-      loadFiles();
-    }
-
-    return () => {
-      currentUrls.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, [post.files]);
-
-  if (loading) return <Spin />;
-
-  return (
-    <Card
-      className="post-card"
-      cover={
-        <>
-          <AuthorHeader
-            userId={post.user.userId}
-            username={post.user.username}
-            avatar={post.user.avatarFileId}
-            publishDate={post.publishDate}
+    const renderPostImages = () => {
+      if (imageUrls.length === 1) {
+        return (
+          <Image
+            src={imageUrls[0]}
+            alt="post image"
+            preview={{ mask: <span>Просмотр</span> }}
+            style={{
+              width: "100%",
+              maxHeight: 400,
+              objectFit: "cover",
+              borderRadius: "8px 8px 0 0",
+            }}
           />
-          {imageUrls.length > 0 ? (
-            <Image.PreviewGroup>
-              {imageUrls.map((url, index) => (
-                <Image
-                  key={post.files[index].fileId}
-                  height={250}
-                  alt="post image"
-                  src={url}
-                  style={{ objectFit: "cover", borderRadius: "8px 8px 0 0" }}
-                  preview={{
-                    mask: <span>Просмотр</span>,
-                  }}
-                />
-              ))}
-            </Image.PreviewGroup>
-          ) : null}
-        </>
+        );
       }
-    >
-      <Title level={4}>{post.title}</Title>
-      <Text>{post.availableBody}</Text>
-      {isAuthenticated && (
-        <div style={{ marginTop: 16, display: "flex", alignItems: "center" }}>
-          <Button
-            type="text"
-            icon={
-              post.liked ? (
-                <HeartFilled style={{ color: "#ff4d4f" }} />
-              ) : (
-                <HeartOutlined />
-              )
-            }
-            onClick={() => onLike?.(post.id)}
-          >
-            {post.likesCount}
-          </Button>
+
+      return (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              imageUrls.length === 2
+                ? "1fr 1fr"
+                : imageUrls.length === 3
+                ? "1fr 1fr 1fr"
+                : "repeat(auto-fill, minmax(150px, 1fr))",
+            gap: 8,
+            padding: 8,
+            paddingTop: 0,
+          }}
+        >
+          {imageUrls.map((url, index) => (
+            <Image
+              key={post.files[index].fileId}
+              src={url}
+              alt={`post image ${index + 1}`}
+              height={150}
+              style={{
+                objectFit: "cover",
+                borderRadius: 6,
+                width: "100%",
+              }}
+              preview={{ mask: <span>Просмотр</span> }}
+            />
+          ))}
         </div>
-      )}
-    </Card>
-  );
-};
+      );
+    };
+
+    if (loading) return <Spin />;
+
+    return (
+      <Card
+        className="post-card"
+        style={{ position: "relative" }}
+        cover={
+          <>
+            <AuthorHeader
+              userId={post.user.userId}
+              username={post.user.username}
+              avatar={post.user.avatarFileId}
+              publishDate={post.publishDate}
+            />
+            {imageUrls.length > 0 && (
+              <Image.PreviewGroup>{renderPostImages()}</Image.PreviewGroup>
+            )}
+          </>
+        }
+      >
+        {contextHolder}
+        {isOwnPost && (
+          <Popconfirm
+            title="Удалить пост?"
+            description="Вы уверены, что хотите удалить этот пост?"
+            onConfirm={handleDelete}
+            okText="Да"
+            cancelText="Отмена"
+          >
+            <Button
+              danger
+              type="text"
+              icon={<DeleteOutlined />}
+              style={{ position: "absolute", top: 12, right: 12 }}
+            />
+          </Popconfirm>
+        )}
+
+        <Title level={4}>{post.title}</Title>
+        <Text>{post.availableBody}</Text>
+
+        {isAuthenticated && (
+          <div style={{ marginTop: 16, display: "flex", alignItems: "center" }}>
+            <Button
+              type="text"
+              icon={
+                post.liked ? (
+                  <HeartFilled style={{ color: "#ff4d4f" }} />
+                ) : (
+                  <HeartOutlined />
+                )
+              }
+              onClick={() => onLike?.(post.id)}
+            >
+              {post.likesCount}
+            </Button>
+          </div>
+        )}
+      </Card>
+    );
+  }
+);
 
 export const Post: FC<IPostProps> = ({
   post,
   onLike,
   isAuthenticated = true,
+  onDeletePost,
 }) => {
   return post.fullContent ? (
-    <OpenPost post={post} onLike={onLike} isAuthenticated={isAuthenticated} />
+    <OpenPost
+      onDeletePost={onDeletePost}
+      post={post}
+      onLike={onLike}
+      isAuthenticated={isAuthenticated}
+    />
   ) : (
     <PostLockedMessage
       post={post}

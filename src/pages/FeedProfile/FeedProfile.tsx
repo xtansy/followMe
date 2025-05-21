@@ -135,6 +135,11 @@ export const FeedProfile = observer(() => {
     }
   };
 
+  const onDeletePost = (id: string) => {
+    const newPosts = posts.filter((post) => post.id !== id);
+    setPosts(newPosts);
+  };
+
   useEffect(() => {
     if (id) {
       getUser(id).then((user) => setUserInfo(user));
@@ -187,9 +192,16 @@ export const FeedProfile = observer(() => {
             />
           </div>
         )}
-        {posts.map((post) => (
-          <Post key={post.id} post={post} onLike={handleLike} />
-        ))}
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {posts.map((post) => (
+            <Post
+              key={post.id}
+              post={post}
+              onLike={handleLike}
+              onDeletePost={onDeletePost}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Правая панель с уровнями подписки */}

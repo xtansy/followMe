@@ -175,3 +175,12 @@ export const getAllUsers = async ({ page }: IGetAllUsersParams) => {
     return Promise.reject(error);
   }
 };
+
+export const deleteMyPost = async (postId: string) => {
+  try {
+    const { data } = await api.delete(`/api/publications/${postId}`);
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
