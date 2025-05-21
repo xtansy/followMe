@@ -9,7 +9,13 @@ import {
 } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { UserOutlined, LogoutOutlined, TeamOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  LogoutOutlined,
+  TeamOutlined,
+  EyeOutlined,
+  HeartOutlined,
+} from "@ant-design/icons";
 import { observer } from "mobx-react-lite";
 
 import { LoginModal, RegisterModal } from "..";
@@ -38,12 +44,32 @@ export const Header = observer(() => {
     navigate("/users");
   };
 
+  const onClickFollows = () => {
+    navigate("/follows");
+  };
+
+  const onClickSubscriptions = () => {
+    navigate("/subscriptions");
+  };
+
   const menu = (
     <Menu>
       <Menu.Item key="profile" onClick={onClickMyProfile}>
         <Space>
           <UserOutlined />
           Мой профиль
+        </Space>
+      </Menu.Item>
+      <Menu.Item key="tracked" onClick={onClickFollows}>
+        <Space>
+          <EyeOutlined />
+          Отслеживаемое
+        </Space>
+      </Menu.Item>
+      <Menu.Item key="subscriptions" onClick={onClickSubscriptions}>
+        <Space>
+          <HeartOutlined />
+          Мои подписки
         </Space>
       </Menu.Item>
       <Menu.Divider />
