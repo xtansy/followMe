@@ -187,9 +187,14 @@ export const deleteMyPost = async (postId: string) => {
   }
 };
 
-export const subscribe = async (params: ISubscribeParams) => {
+export const subscribe = async (
+  params: ISubscribeParams
+): Promise<{ paymentLink: string }> => {
   try {
-    const { data } = await api.post("/subscription", params);
+    const { data } = await api.post<{ paymentLink: string }>(
+      "/subscription",
+      params
+    );
     return data;
   } catch (error) {
     return Promise.reject(error);

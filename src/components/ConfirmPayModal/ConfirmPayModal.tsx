@@ -29,7 +29,8 @@ export const ConfirmPayModal: FC<ConfirmPayModalProps> = ({
   const handlePay = async () => {
     setLoading(true);
     subscribe({ hostId: userId, level: subscription.level })
-      .then(() => {
+      .then(({ paymentLink }) => {
+        window.location.href = paymentLink;
         onConfirm?.();
       })
       .finally(() => setLoading(false));
