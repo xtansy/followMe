@@ -178,7 +178,7 @@ export const FeedProfile = observer(() => {
       </div>
 
       {/* Центральная колонка с постами */}
-      <div style={{ flexGrow: 1, flexShrink: 0 }}>
+      <div style={{ maxWidth: 750, flexShrink: 0 }}>
         {isOwnProfile && (
           <div style={{ marginBottom: "10px" }}>
             <CreatePostWidget
