@@ -159,8 +159,6 @@ export const FeedProfile = observer(() => {
     fetchSubscriptions(id);
   }, [id]);
 
-  console.log("@@ userInfo", userInfo);
-
   if (!userInfo) return null;
 
   return (

@@ -15,6 +15,7 @@ import {
   TeamOutlined,
   EyeOutlined,
   HeartOutlined,
+  WalletOutlined,
 } from "@ant-design/icons";
 import { observer } from "mobx-react-lite";
 
@@ -52,6 +53,10 @@ export const Header = observer(() => {
     navigate("/subscriptions");
   };
 
+  const onClickIncome = () => {
+    navigate("/income");
+  };
+
   const menu = (
     <Menu>
       <Menu.Item key="profile" onClick={onClickMyProfile}>
@@ -60,10 +65,10 @@ export const Header = observer(() => {
           Мой профиль
         </Space>
       </Menu.Item>
-      <Menu.Item key="tracked" onClick={onClickFollows}>
+      <Menu.Item key="income" onClick={onClickIncome}>
         <Space>
-          <EyeOutlined />
-          Отслеживаемое
+          <WalletOutlined />
+          Мой доход
         </Space>
       </Menu.Item>
       <Menu.Item key="subscriptions" onClick={onClickSubscriptions}>
@@ -72,6 +77,13 @@ export const Header = observer(() => {
           Мои подписки
         </Space>
       </Menu.Item>
+      <Menu.Item key="tracked" onClick={onClickFollows}>
+        <Space>
+          <EyeOutlined />
+          Отслеживаемое
+        </Space>
+      </Menu.Item>
+
       <Menu.Divider />
       <Menu.Item
         key="logout"

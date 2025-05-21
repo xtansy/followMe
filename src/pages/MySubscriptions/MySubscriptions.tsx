@@ -94,7 +94,6 @@ const getLevelInfo = (level: number) => {
   }
 
   if (level >= 2 && level <= 3) {
-    console.log("@@ level", level);
     return { color: "gold", icon: <CrownOutlined /> };
   }
 
