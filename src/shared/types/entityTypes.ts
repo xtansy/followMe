@@ -42,6 +42,31 @@ export interface IUserInfo {
   subLevel: number;
 }
 
+export interface ISubscriptionDto {
+  host: {
+    userId: string;
+    followersCount: number;
+    followsCount: number;
+    subscriptionsCount: number;
+    publicationsCount: number;
+    username: string;
+    email: string;
+    isFollowed: boolean;
+    subLevel: number;
+    avatarFileId: string;
+  };
+  subscription: {
+    title: string;
+    price: {
+      units: number;
+      nanos: number;
+    };
+    isActive: boolean;
+    expiresAt: string;
+    level: number;
+  };
+}
+
 export type IUserInfoShort = Omit<
   IUserInfo,
   | "isFollowed"

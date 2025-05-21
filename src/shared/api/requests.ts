@@ -1,11 +1,12 @@
 import { api } from "./instance";
-import type { IUserInfo, IPost } from "../types";
+import type { IUserInfo, IPost, ISubscriptionDto } from "../types";
 import type {
   IFollowParams,
   IGetAllUsersParams,
   IGetLentaPostsParams,
   IGetMyPostsParams,
   ILoginParams,
+  IPostAvatarParams,
   IPostParams,
   IRegisterParams,
   ISubscribeParams,
@@ -207,6 +208,69 @@ export const like = async (postId: string) => {
 export const unlike = async (postId: string) => {
   try {
     const { data } = await api.post(`/like/${postId}/unlike`);
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const postAvatar = async ({ file }: IPostAvatarParams) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const { data } = await api.post("/api/files/avatar", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return data;
+  } catch (error) {
+    console.log("@@ error", error);
+    return Promise.reject(error);
+  }
+};
+
+export const getAvatar = async (fileId: string): Promise<string> => {
+  try {
+    const response = await api.get(`/api/files/avatar/${fileId}`, {
+      responseType: "blob",
+    });
+
+    const blobUrl = URL.createObjectURL(response.data);
+    return blobUrl;
+  } catch (error) {
+    console.error("Error fetching file:", error);
+    return Promise.reject(error);
+  }
+};
+
+export const getMySubscriptionsToUser = async (): Promise<
+  ISubscriptionDto[]
+> => {
+  try {
+    const { data } = await api.get<ISubscriptionDto[]>("/subscription/list");
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const getMyFollows = async () => {
+  try {
+    const { data } = await api.get("/api/follow/list");
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const getMySubscribers = async (): Promise<ISubscriptionDto[]> => {
+  try {
+    const { data } = await api.get<ISubscriptionDto[]>(
+      "/subscription/subscribers/list"
+    );
     return data;
   } catch (error) {
     return Promise.reject(error);

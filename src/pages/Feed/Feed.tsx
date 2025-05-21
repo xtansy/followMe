@@ -15,6 +15,7 @@ import { observer } from "mobx-react-lite";
 import { useStore } from "../../store/context";
 import { SUBSCRIPTIONS_MOCK } from "../../shared/constants";
 import { like, unlike } from "../../shared/api";
+import { CardDummy } from "../../shared/ui";
 
 // const mockPosts: IPost[] = [
 //   {
@@ -126,19 +127,28 @@ export const Feed = observer(() => {
             subscriptions={subscriptions}
           />
         )}
-        <List
-          dataSource={posts}
-          itemLayout="vertical"
-          renderItem={(post) => (
-            <List.Item key={post.id}>
-              <Post
-                post={post}
-                onLike={onLike}
-                isAuthenticated={userStore.isAuthenticated}
-              />
-            </List.Item>
-          )}
-        />
+        {posts.length > 0 ? (
+          <List
+            dataSource={posts}
+            itemLayout="vertical"
+            renderItem={(post) => (
+              <List.Item key={post.id}>
+                <Post
+                  post={post}
+                  onLike={onLike}
+                  isAuthenticated={userStore.isAuthenticated}
+                />
+              </List.Item>
+            )}
+          />
+        ) : (
+          <div style={{ marginTop: "30px" }}>
+            <CardDummy
+              title="У вас еще нет постов"
+              subtitle="Создавайте интересные посты, чтобы привлечь подписчиков на Ваш контент"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

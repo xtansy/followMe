@@ -10,3 +10,4 @@ export * from "./ConfirmPayModal/ConfirmPayModal";
 export * from "./ProfileCard/ProfileCard";
 export * from "./CreateSubscriptionModal/CreateSubscriptionModal";
 export * from "./CreateSubscriptionWidget/CreateSubscriptionWidget";
+export * from "./AvatarUser/AvatarUser";

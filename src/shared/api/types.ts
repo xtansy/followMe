@@ -14,6 +14,10 @@ export interface IPostParams {
   files: File[];
 }
 
+export interface IPostAvatarParams {
+  file: File;
+}
+
 export interface IGetMyPostsParams {
   ownUserId: string;
   page: number;

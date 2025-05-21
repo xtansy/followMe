@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { getAllUsers, getUser } from "../../shared/api";
+import { getMyFollows } from "../../shared/api";
 import { useNavigate } from "react-router";
 import { Avatar, Card, Col, Row, Spin, Typography } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import { IUserInfoShort, IUserInfo } from "../../shared/types";
+import { type IUserInfo } from "../../shared/types";
+import { CardDummy } from "../../shared/ui";
 
 const { Text, Title } = Typography;
 
@@ -17,13 +18,8 @@ export const Follows = () => {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const shortUsers: IUserInfoShort[] = await getAllUsers({ page: 1 });
-
-        const fullUsers = await Promise.all(
-          shortUsers.map((u) => getUser(u.userId).catch(() => null))
-        );
-
-        setUsers(fullUsers.filter((u): u is IUserInfo => u !== null));
+        const follows = await getMyFollows();
+        setUsers(follows);
       } catch (error) {
         console.error("Ошибка загрузки пользователей", error);
       } finally {
@@ -52,6 +48,17 @@ export const Follows = () => {
       >
         Отслеживаемые пользователи
       </Title>
+
+      {users.length === 0 && (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <CardDummy
+            title="Вы еще никого не отслеживаете"
+            subtitle="Подпишитесь на интересных авторов, чтобы получить доступ к эксклюзивному контенту"
+            buttonText="К авторам"
+            navigateTo="/users"
+          />
+        </div>
+      )}
 
       <Row gutter={[24, 24]}>
         {users.map((user) => (

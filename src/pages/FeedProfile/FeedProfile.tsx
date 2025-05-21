@@ -24,6 +24,7 @@ import { useParams } from "react-router";
 import { useStore } from "../../store/context";
 import { observer } from "mobx-react-lite";
 import { SUBSCRIPTIONS_MOCK } from "../../shared/constants";
+import { CardDummy } from "../../shared/ui";
 
 // const POSTS_MOCK: IPost[] = [
 //   {
@@ -173,7 +174,7 @@ export const FeedProfile = observer(() => {
       }}
     >
       {/* Левая панель профиля */}
-      <div style={{ width: 300, flexShrink: 0 }}>
+      <div style={{ width: 331, flexShrink: 0 }}>
         <ProfileCard
           userId={userInfo.userId}
           subscriptionsCount={userInfo.subscriptionsCount}
@@ -186,7 +187,7 @@ export const FeedProfile = observer(() => {
       </div>
 
       {/* Центральная колонка с постами */}
-      <div style={{ maxWidth: 750, flexShrink: 0 }}>
+      <div style={{ maxWidth: 750, flexShrink: 0, width: "100%" }}>
         {isOwnProfile && (
           <div style={{ marginBottom: "10px" }}>
             <CreatePostWidget
@@ -195,16 +196,28 @@ export const FeedProfile = observer(() => {
             />
           </div>
         )}
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {posts.map((post) => (
-            <Post
-              key={post.id}
-              post={post}
-              onLike={handleLike}
-              onDeletePost={onDeletePost}
+
+        {posts.length > 0 ? (
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+          >
+            {posts.map((post) => (
+              <Post
+                key={post.id}
+                post={post}
+                onLike={handleLike}
+                onDeletePost={onDeletePost}
+              />
+            ))}
+          </div>
+        ) : (
+          <div style={{ marginTop: "30px" }}>
+            <CardDummy
+              title="У вас еще нет постов"
+              subtitle="Создавайте интересные посты, чтобы привлечь подписчиков на Ваш контент"
             />
-          ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Правая панель с уровнями подписки */}
