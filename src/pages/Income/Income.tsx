@@ -1,7 +1,20 @@
-import { Card, Col, Row, Statistic, Table, Tag, Typography } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  message,
+  Modal,
+  Row,
+  Statistic,
+  Table,
+  Tag,
+  Typography,
+  Tooltip as TooltipAntd,
+} from "antd";
 import {
   BarChartOutlined,
   CalendarOutlined,
+  CopyOutlined,
   RiseOutlined,
   UserSwitchOutlined,
   WalletOutlined,
@@ -84,8 +97,22 @@ const getLevelInfo = (level: number) => {
   return { color: "purple" };
 };
 
+const EMAIL = "followMe-money@mail.ru";
+
 export const Income = () => {
+  const [messageApi, contextHolder] = message.useMessage();
+
   const [transactions] = useState<Transaction[]>(mockTransactions);
+  const [isWithdrawModalVisible, setWithdrawModalVisible] = useState(false);
+
+  const showWithdrawModal = () => setWithdrawModalVisible(true);
+  const handleWithdrawClose = () => setWithdrawModalVisible(false);
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(EMAIL).then(() => {
+      messageApi.success("Почта скопирована в буфер обмена!");
+    });
+  };
 
   const columns = [
     {
@@ -138,6 +165,34 @@ export const Income = () => {
 
   return (
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: 24 }}>
+      {contextHolder}
+      <Modal
+        visible={isWithdrawModalVisible}
+        onCancel={handleWithdrawClose}
+        footer={null}
+        centered
+        title="Вывод средств"
+      >
+        <div style={{ padding: "8px 0", fontSize: 16, textAlign: "center" }}>
+          Чтобы вывести деньги, напишите нам на почту:
+          <br />
+          <strong style={{ color: "#1890ff", userSelect: "all" }}>
+            {EMAIL}
+          </strong>
+          <TooltipAntd title="Скопировать почту">
+            <CopyOutlined
+              onClick={handleCopyEmail}
+              style={{
+                marginLeft: 8,
+                color: "#1890ff",
+                cursor: "pointer",
+                fontSize: 16,
+              }}
+            />
+          </TooltipAntd>
+        </div>
+      </Modal>
+
       <Title level={2} style={{ marginBottom: 24 }}>
         <WalletOutlined /> Доходы от подписок
       </Title>
@@ -153,6 +208,14 @@ export const Income = () => {
               prefix={<RiseOutlined />}
               suffix="₽"
             />
+            <Button
+              type="primary"
+              block
+              style={{ marginTop: 16, background: "#52c41a" }}
+              onClick={showWithdrawModal}
+            >
+              Вывести деньги
+            </Button>
           </Card>
         </Col>
         <Col span={8}>
@@ -226,17 +289,6 @@ export const Income = () => {
           }}
         />
       </Card>
-
-      <style>{`
-        .hover-row:hover td {
-          background-color: #fafafa !important;
-          transition: background-color 0.3s ease;
-        }
-        .ant-table-thead > tr > th {
-          background-color: #f8f9fa !important;
-          font-weight: 600 !important;
-        }
-      `}</style>
     </div>
   );
 };

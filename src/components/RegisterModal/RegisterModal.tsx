@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { Modal, Form, Input, Button, message } from "antd";
-import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 
 import { userStore } from "../../store/UserStore";
 
@@ -16,16 +16,15 @@ export const RegisterModal: FC<IRegisterModalProps> = ({
   onSuccess,
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
-
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (values: {
     username: string;
+    email: string;
     password: string;
   }) => {
     setLoading(true);
-    onSuccess();
 
     userStore
       .register(values)
@@ -36,8 +35,8 @@ export const RegisterModal: FC<IRegisterModalProps> = ({
       .catch(() => {
         messageApi.error("Ошибка регистрации. Попробуйте позже.");
       })
-
       .finally(() => {
+        setLoading(false);
         form.resetFields();
       });
   };
@@ -70,6 +69,20 @@ export const RegisterModal: FC<IRegisterModalProps> = ({
           <Input
             prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
             placeholder="Логин"
+            size="large"
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="email"
+          rules={[
+            { required: true, message: "Введите email" },
+            { type: "email", message: "Некорректный email" },
+          ]}
+        >
+          <Input
+            prefix={<MailOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
+            placeholder="Email"
             size="large"
           />
         </Form.Item>
