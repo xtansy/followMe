@@ -14,6 +14,7 @@ import {
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../store/context";
 import { SUBSCRIPTIONS_MOCK } from "../../shared/constants";
+import { like, unlike } from "../../shared/api";
 
 // const mockPosts: IPost[] = [
 //   {
@@ -84,6 +85,14 @@ export const Feed = observer(() => {
           : post
       )
     );
+    const post = posts.find((post) => post.id === postId);
+    if (!post) return;
+
+    if (post.liked) {
+      unlike(postId);
+    } else {
+      like(postId);
+    }
   };
 
   const handleCreatePost = (newPost: IPostParams) => {

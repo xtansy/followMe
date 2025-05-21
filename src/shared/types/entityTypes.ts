@@ -39,6 +39,7 @@ export interface IUserInfo {
   username: string;
   avatarFileId: string;
   isFollowed: boolean;
+  subLevel: number;
 }
 
 export type IUserInfoShort = Omit<

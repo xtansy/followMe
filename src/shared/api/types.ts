@@ -40,3 +40,8 @@ export interface IFollowParams {
 export interface IGetAllUsersParams {
   page: number;
 }
+
+export interface ISubscribeParams {
+  hostId: string; // userId
+  level: number;
+}

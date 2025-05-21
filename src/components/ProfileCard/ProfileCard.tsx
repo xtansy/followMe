@@ -7,8 +7,6 @@ const { Title, Text } = Typography;
 interface IProfileCardProps {
   isOwnProfile?: boolean;
   username: string;
-  onSubscribe?: () => void;
-  isSubscribed?: boolean;
   postsLength: number;
   subscriptionsCount: number;
   followersCount: number;
@@ -18,8 +16,6 @@ interface IProfileCardProps {
 
 export const ProfileCard: FC<IProfileCardProps> = ({
   isOwnProfile = false,
-  onSubscribe,
-  isSubscribed = false,
   username = "Username",
   postsLength = 2,
   subscriptionsCount,
@@ -72,14 +68,6 @@ export const ProfileCard: FC<IProfileCardProps> = ({
 
         {!isOwnProfile && (
           <Space>
-            <Button
-              type={isSubscribed ? "default" : "primary"}
-              onClick={() => onSubscribe?.()}
-              style={{ margin: "16px 0", width: 130 }}
-            >
-              {isSubscribed ? "Отписаться" : "Подписаться"}
-            </Button>
-
             <Button
               type={following ? "default" : "dashed"}
               onClick={handleFollowToggle}

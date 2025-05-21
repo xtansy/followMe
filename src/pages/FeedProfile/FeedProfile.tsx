@@ -17,6 +17,8 @@ import {
   getUser,
   IPostParams,
   ISubscriptionParams,
+  like,
+  unlike,
 } from "../../shared/api";
 import { useParams } from "react-router";
 import { useStore } from "../../store/context";
@@ -78,7 +80,6 @@ export const FeedProfile = observer(() => {
   const { id } = useParams();
 
   const [userInfo, setUserInfo] = useState<IUserInfo | null>(null);
-  const [isSubscribed, setIsSubscribed] = useState(false);
   const [posts, setPosts] = useState<IPost[]>([]);
   const [subscriptions, setSubscriptions] =
     useState<ISubscription[]>(SUBSCRIPTIONS_MOCK);
@@ -88,10 +89,6 @@ export const FeedProfile = observer(() => {
   const mostExpensiveSubscription = subscriptions.reduce((max, current) =>
     current.level > max.level ? current : max
   );
-
-  const onSubscribe = () => {
-    setIsSubscribed(!isSubscribed);
-  };
 
   const handleLike = (id: string) => {
     setPosts((prev) =>
@@ -105,6 +102,14 @@ export const FeedProfile = observer(() => {
           : p
       )
     );
+    const post = posts.find((post) => post.id === id);
+    if (!post) return;
+
+    if (post.liked) {
+      unlike(id);
+    } else {
+      like(id);
+    }
   };
 
   const onSubmitPost = (newPost: IPostParams) => {
@@ -154,6 +159,8 @@ export const FeedProfile = observer(() => {
     fetchSubscriptions(id);
   }, [id]);
 
+  console.log("@@ userInfo", userInfo);
+
   if (!userInfo) return null;
 
   return (
@@ -173,8 +180,6 @@ export const FeedProfile = observer(() => {
           userId={userInfo.userId}
           subscriptionsCount={userInfo.subscriptionsCount}
           followersCount={userInfo.followersCount}
-          onSubscribe={onSubscribe}
-          isSubscribed={isSubscribed}
           postsLength={userInfo.publicationsCount}
           isOwnProfile={isOwnProfile}
           username={userInfo.username}
@@ -224,9 +229,10 @@ export const FeedProfile = observer(() => {
             {subscriptions.map((subscription) => (
               <SubscriptionCard
                 {...subscription}
-                isSubscribed={isSubscribed}
                 channelName={userInfo.username}
                 isOwnProfile={isOwnProfile}
+                userId={userInfo.userId}
+                isSubscribed={userInfo.subLevel >= subscription.level}
               />
             ))}
           </Space>

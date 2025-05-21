@@ -24,16 +24,18 @@ interface ISubscriptionCardProps extends ISubscription {
   isSubscribed?: boolean;
   channelName: string;
   isOwnProfile?: boolean;
+  userId: string;
 }
 
 export const SubscriptionCard: FC<ISubscriptionCardProps> = ({
-  isSubscribed = false,
+  isSubscribed = true,
   title,
   description,
   price,
   level,
   channelName,
   isOwnProfile = false,
+  userId,
 }) => {
   const [isVisibleConfirm, setIsVisibleConfirm] = useState<boolean>(false);
 
@@ -62,6 +64,7 @@ export const SubscriptionCard: FC<ISubscriptionCardProps> = ({
         </Button>
       )}
       <ConfirmPayModal
+        userId={userId}
         visible={isVisibleConfirm}
         channelName={channelName}
         onCancel={() => setIsVisibleConfirm(false)}

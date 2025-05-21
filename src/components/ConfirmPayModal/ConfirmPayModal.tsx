@@ -3,6 +3,7 @@ import { Modal, Typography, Button, Descriptions } from "antd";
 
 import { type ISubscription } from "../../shared/types";
 import { convertPriceToNumber } from "../../shared/lib";
+import { subscribe } from "../../shared/api";
 
 const { Title } = Typography;
 
@@ -12,6 +13,7 @@ interface ConfirmPayModalProps {
   onConfirm?: () => void;
   channelName: string;
   subscription: ISubscription;
+  userId: string;
 }
 
 export const ConfirmPayModal: FC<ConfirmPayModalProps> = ({
@@ -20,15 +22,17 @@ export const ConfirmPayModal: FC<ConfirmPayModalProps> = ({
   onConfirm,
   channelName,
   subscription,
+  userId,
 }) => {
   const [loading, setLoading] = useState(false);
 
   const handlePay = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      onConfirm?.();
-    }, 2_000);
+    subscribe({ hostId: userId, level: subscription.level })
+      .then(() => {
+        onConfirm?.();
+      })
+      .finally(() => setLoading(false));
   };
 
   return (

@@ -141,6 +141,7 @@ export const PostLockedMessage: FC<PostLockedMessageProps> = ({
       </Card>
 
       <ConfirmPayModal
+        userId={post.user.userId}
         visible={modalOpen}
         onCancel={() => setModalOpen(false)}
         onConfirm={() => {

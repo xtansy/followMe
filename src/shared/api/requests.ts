@@ -8,6 +8,7 @@ import type {
   ILoginParams,
   IPostParams,
   IRegisterParams,
+  ISubscribeParams,
   ISubscriptionParams,
 } from "./types";
 
@@ -179,6 +180,33 @@ export const getAllUsers = async ({ page }: IGetAllUsersParams) => {
 export const deleteMyPost = async (postId: string) => {
   try {
     const { data } = await api.delete(`/api/publications/${postId}`);
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const subscribe = async (params: ISubscribeParams) => {
+  try {
+    const { data } = await api.post("/subscription", params);
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const like = async (postId: string) => {
+  try {
+    const { data } = await api.post(`/like/${postId}/like`);
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const unlike = async (postId: string) => {
+  try {
+    const { data } = await api.post(`/like/${postId}/unlike`);
     return data;
   } catch (error) {
     return Promise.reject(error);
