@@ -7,8 +7,8 @@ export const IMAGE_URL_MOCK =
 export const SUBSCRIPTIONS_MOCK: ISubscription[] = [
   {
     title: "Базовый",
-    description: "Базированный доступ ко всем постам пользователя",
-    price: convertNumberToPrice(100),
+    description: "Бесплатный вариант подписки",
+    price: convertNumberToPrice(0),
     level: 0,
   },
 ];

@@ -48,7 +48,7 @@ export const SubscriptionCard: FC<ISubscriptionCardProps> = ({
       extra={<CrownFilled style={{ color: getColor(level) }} />}
     >
       <Text>{description}</Text>
-      {!isOwnProfile && (
+      {!isOwnProfile && level !== 0 && (
         <Button
           onClick={() => setIsVisibleConfirm(true)}
           type="primary"

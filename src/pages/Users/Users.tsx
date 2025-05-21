@@ -144,7 +144,7 @@ export const Users = () => {
                       type="secondary"
                       style={{ fontSize: 12, whiteSpace: "nowrap" }}
                     >
-                      Подписчиков
+                      Отслеживают
                     </Text>
                   </Col>
                   <Col span={7}>
