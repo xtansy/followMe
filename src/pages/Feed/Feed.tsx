@@ -116,7 +116,7 @@ export const Feed = observer(() => {
     getLentaPosts({ page: 1 }).then((fetchedPosts) => {
       setPosts(fetchedPosts);
     });
-  }, []);
+  }, [userStore.userId]);
 
   return (
     <div className="feed-page">
@@ -127,25 +127,37 @@ export const Feed = observer(() => {
             subscriptions={subscriptions}
           />
         )}
-        {posts.length > 0 ? (
-          <List
-            dataSource={posts}
-            itemLayout="vertical"
-            renderItem={(post) => (
-              <List.Item key={post.id}>
-                <Post
-                  post={post}
-                  onLike={onLike}
-                  isAuthenticated={userStore.isAuthenticated}
+        {userStore.isAuthenticated ? (
+          <>
+            {posts.length > 0 ? (
+              <List
+                dataSource={posts}
+                itemLayout="vertical"
+                renderItem={(post) => (
+                  <List.Item key={post.id}>
+                    <Post
+                      post={post}
+                      onLike={onLike}
+                      isAuthenticated={userStore.isAuthenticated}
+                    />
+                  </List.Item>
+                )}
+              />
+            ) : (
+              <div style={{ marginTop: "30px" }}>
+                <CardDummy
+                  title="В Вашей ленте еще нет постов"
+                  subtitle="Подпишитесь на интересных авторов, чтобы получить доступ к
+              эксклюзивному контенту"
                 />
-              </List.Item>
+              </div>
             )}
-          />
+          </>
         ) : (
           <div style={{ marginTop: "30px" }}>
             <CardDummy
-              title="У вас еще нет постов"
-              subtitle="Создавайте интересные посты, чтобы привлечь подписчиков на Ваш контент"
+              title="Посты недоступны"
+              subtitle="Зарегистрируйтесь или войдите, чтобы смотреть посты"
             />
           </div>
         )}

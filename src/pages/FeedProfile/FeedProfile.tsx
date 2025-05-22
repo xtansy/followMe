@@ -211,11 +211,20 @@ export const FeedProfile = observer(() => {
               />
             ))}
           </div>
-        ) : (
+        ) : isOwnProfile ? (
           <div style={{ marginTop: "30px" }}>
             <CardDummy
               title="У вас еще нет постов"
               subtitle="Создавайте интересные посты, чтобы привлечь подписчиков на Ваш контент"
+            />
+          </div>
+        ) : (
+          <div style={{ marginTop: "30px" }}>
+            <CardDummy
+              title="У пользователя еще нет постов"
+              subtitle="Вы можете создавать интересные посты, чтобы привлечь подписчиков на Ваш контент"
+              buttonText="Перейти в мой профиль"
+              navigateTo={`/profile/${userStore.userId}`}
             />
           </div>
         )}

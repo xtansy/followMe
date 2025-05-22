@@ -49,8 +49,6 @@ export const Header = observer(() => {
     navigate("/income");
   };
 
-  console.log("@@ userStore?.avatarFileId", userStore?.avatarFileId);
-
   const menu = (
     <Menu>
       <Menu.Item key="profile" onClick={onClickMyProfile}>
