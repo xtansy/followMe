@@ -74,7 +74,7 @@ export const CreateSubscriptionModal: FC<ICreateSubscriptionModalProps> = ({
         layout="vertical"
         requiredMark="optional"
         initialValues={{
-          price: convertPriceToNumber(mostExpensiveSubscription.price),
+          price: convertPriceToNumber(mostExpensiveSubscription.price) + 1,
         }}
       >
         <Form.Item
@@ -133,6 +133,8 @@ export const CreateSubscriptionModal: FC<ICreateSubscriptionModalProps> = ({
           ]}
         >
           <InputNumber<number>
+            min={1}
+            max={1_000_000}
             step={10}
             precision={2}
             style={{ width: "100%" }}
