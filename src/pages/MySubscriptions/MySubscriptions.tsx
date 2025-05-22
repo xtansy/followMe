@@ -3,7 +3,6 @@ import {
   List,
   Typography,
   Tag,
-  Avatar,
   Button,
   Space,
   Spin,
@@ -13,7 +12,6 @@ import {
   CrownOutlined,
   StarOutlined,
   FireOutlined,
-  UserOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   ClockCircleOutlined,
@@ -24,6 +22,7 @@ import { convertPriceToNumber } from "../../shared/lib";
 import { type ISubscriptionDto } from "../../shared/types";
 import { getMySubscriptionsToUser } from "../../shared/api";
 import { CardDummy } from "../../shared/ui";
+import { AvatarUser } from "../../components";
 
 const { Title, Text } = Typography;
 
@@ -283,16 +282,10 @@ export const MySubscriptions = () => {
                 >
                   <List.Item.Meta
                     avatar={
-                      <Avatar
-                        src={
-                          host.avatarFileId
-                            ? `/api/file/${host.avatarFileId}`
-                            : undefined
-                        }
-                        icon={<UserOutlined />}
+                      <AvatarUser
                         size="large"
                         onClick={() => handleAuthorClick(host.userId)}
-                        style={{ cursor: "pointer" }}
+                        avatarFileId={host.avatarFileId}
                       />
                     }
                     title={

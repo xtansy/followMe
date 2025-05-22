@@ -7,9 +7,11 @@ import styled from "styled-components";
 const { useToken } = theme;
 
 interface IAvatarUserProps {
-  avatarFileId: string;
-  size?: number;
+  avatarFileId?: string | null;
+  size?: "large" | "small" | "default" | number;
   showBorder?: boolean;
+  onClick?: () => void;
+  style?: React.CSSProperties;
 }
 
 const AvatarContainer = styled.div`
@@ -34,6 +36,8 @@ export const AvatarUser: FC<IAvatarUserProps> = ({
   avatarFileId,
   size = 128,
   showBorder = true,
+  onClick,
+  style,
 }) => {
   const { token } = useToken();
   const [loading, setLoading] = useState<boolean>(true);
@@ -43,7 +47,7 @@ export const AvatarUser: FC<IAvatarUserProps> = ({
   useEffect(() => {
     let blobUrl: string | null = null;
 
-    const fetchAvatar = async () => {
+    const fetchAvatar = async (avatarFileId: string) => {
       try {
         setLoading(true);
         const url = await getAvatar(avatarFileId);
@@ -58,7 +62,7 @@ export const AvatarUser: FC<IAvatarUserProps> = ({
     };
 
     if (avatarFileId) {
-      fetchAvatar();
+      fetchAvatar(avatarFileId);
     } else {
       setLoading(false);
       setAvatarUrl(null);
@@ -75,15 +79,18 @@ export const AvatarUser: FC<IAvatarUserProps> = ({
     <>
       <AvatarContainer>
         <Avatar
+          onClick={onClick}
           size={size}
           icon={!avatarUrl && <UserOutlined />}
           src={avatarUrl || undefined}
-          style={{
-            marginBottom: 8,
-            border: showBorder ? `2px solid ${token.colorPrimary}` : "none",
-            boxShadow: showBorder ? token.boxShadow : "none",
-            transition: "all 0.3s ease",
-          }}
+          style={
+            style || {
+              cursor: onClick ? "pointer" : "default",
+              border: showBorder ? `2px solid ${token.colorPrimary}` : "none",
+              boxShadow: showBorder ? token.boxShadow : "none",
+              transition: "all 0.3s ease",
+            }
+          }
         />
         {loading && (
           <LoadingOverlay>

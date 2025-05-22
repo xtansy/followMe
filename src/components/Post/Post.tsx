@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Image,
-  Avatar,
   Spin,
   Space,
   Popconfirm,
@@ -13,7 +12,6 @@ import {
 import {
   HeartFilled,
   HeartOutlined,
-  UserOutlined,
   LockOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
@@ -28,6 +26,7 @@ import { ConfirmPayModal } from "../ConfirmPayModal/ConfirmPayModal";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../store/context";
 import { deleteMyPost } from "../../shared/api";
+import { AvatarUser } from "../AvatarUser/AvatarUser";
 
 dayjs.extend(relativeTime);
 dayjs.locale("ru");
@@ -43,10 +42,10 @@ interface IPostProps {
 
 const AuthorHeader: FC<{
   username: string;
-  avatar: string;
   publishDate: string;
   userId: string;
-}> = ({ username, publishDate, userId }) => {
+  avatarFileId: string;
+}> = ({ username, publishDate, userId, avatarFileId }) => {
   const navigate = useNavigate();
   const formattedDate = dayjs(publishDate).format("D MMMM YYYY в HH:mm");
   const relativeDate = dayjs(publishDate).fromNow();
@@ -60,13 +59,14 @@ const AuthorHeader: FC<{
         padding: "10px 24px 0",
       }}
     >
-      <Avatar
-        onClick={() => navigate(`/profile/${userId}`)}
-        // src={avatar}
-        icon={<UserOutlined />}
-        size="large"
-        style={{ marginRight: 12, cursor: "pointer" }}
-      />
+      <div style={{ marginRight: 12, cursor: "pointer" }}>
+        <AvatarUser
+          size="large"
+          onClick={() => navigate(`/profile/${userId}`)}
+          avatarFileId={avatarFileId}
+        />
+      </div>
+
       <div style={{ display: "flex", flexDirection: "column" }}>
         <Text
           style={{ cursor: "pointer" }}
@@ -107,7 +107,7 @@ export const PostLockedMessage: FC<PostLockedMessageProps> = ({
           <AuthorHeader
             userId={post.user.userId}
             username={post.user.username}
-            avatar={post.user.avatarFileId}
+            avatarFileId={post.user.avatarFileId}
             publishDate={post.publishDate}
           />
         }
@@ -259,7 +259,7 @@ export const OpenPost: FC<IPostProps> = observer(
             <AuthorHeader
               userId={post.user.userId}
               username={post.user.username}
-              avatar={post.user.avatarFileId}
+              avatarFileId={post.user.avatarFileId}
               publishDate={post.publishDate}
             />
             {imageUrls.length > 0 && (

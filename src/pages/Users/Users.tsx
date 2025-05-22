@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { getAllUsers, getUser } from "../../shared/api";
 import { useNavigate } from "react-router";
-import { Avatar, Card, Col, Row, Spin, Typography } from "antd";
-import { UserOutlined } from "@ant-design/icons";
+import { Card, Col, Row, Spin, Typography } from "antd";
 import { IUserInfoShort, IUserInfo } from "../../shared/types";
+import { AvatarUser } from "../../components";
 
 const { Text, Title } = Typography;
 
@@ -93,9 +93,9 @@ export const Users = () => {
                       paddingBottom: "16px",
                     }}
                   >
-                    <Avatar
+                    <AvatarUser
+                      avatarFileId={user.avatarFileId}
                       size={80}
-                      icon={<UserOutlined />}
                       style={{
                         border: "3px solid #fff",
                         boxShadow: "0 2px 8px rgba(0,0,0,0.15)",

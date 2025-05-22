@@ -1,12 +1,4 @@
-import {
-  Layout,
-  Typography,
-  Button,
-  Space,
-  Avatar,
-  Dropdown,
-  Menu,
-} from "antd";
+import { Layout, Typography, Button, Space, Dropdown, Menu } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -19,7 +11,7 @@ import {
 } from "@ant-design/icons";
 import { observer } from "mobx-react-lite";
 
-import { LoginModal, RegisterModal } from "..";
+import { LoginModal, RegisterModal, AvatarUser } from "..";
 import { useStore } from "../../store/context";
 
 const { Header: HeaderAnt } = Layout;
@@ -56,6 +48,8 @@ export const Header = observer(() => {
   const onClickIncome = () => {
     navigate("/income");
   };
+
+  console.log("@@ userStore?.avatarFileId", userStore?.avatarFileId);
 
   const menu = (
     <Menu>
@@ -161,7 +155,7 @@ export const Header = observer(() => {
                 gap: 8,
               }}
             >
-              <Avatar size="small" icon={<UserOutlined />} />
+              <AvatarUser size="small" avatarFileId={userStore?.avatarFileId} />
               <span style={{ color: "#1890ff" }}>Мой профиль</span>
             </Button>
           </Dropdown>

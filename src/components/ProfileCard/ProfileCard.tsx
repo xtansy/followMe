@@ -12,6 +12,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import { follow, unfollow, postAvatar, getUser } from "../../shared/api";
 import type { UploadChangeParam } from "antd/es/upload";
 import { AvatarUser } from "../AvatarUser/AvatarUser";
+import { userStore } from "../../store/UserStore";
 
 const { Title, Text } = Typography;
 
@@ -69,6 +70,7 @@ export const ProfileCard: FC<IProfileCardProps> = ({
 
     try {
       await postAvatar({ file });
+      await userStore.postAvatar(userId, { file });
       const { avatarFileId: newAvatarFileId } = await getUser(userId);
       setCurrentAvatarFileId(newAvatarFileId);
       messageApi.success("Аватар обновлён!");
