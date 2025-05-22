@@ -41,7 +41,7 @@ export const Follows = () => {
   }
 
   return (
-    <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
+    <div style={{ padding: "24px", maxWidth: "1300px", margin: "0 auto" }}>
       <Title
         level={2}
         style={{ textAlign: "center", marginBottom: "32px", color: "#1890ff" }}
@@ -139,7 +139,7 @@ export const Follows = () => {
                     </Text>
                     <br />
                     <Text type="secondary" style={{ fontSize: 12 }}>
-                      Подписок
+                      Подписчики
                     </Text>
                   </Col>
                   <Col span={10}>

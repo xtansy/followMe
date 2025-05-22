@@ -136,13 +136,13 @@ export const ProfileCard: FC<IProfileCardProps> = ({
             <Title level={5} style={{ margin: 0 }}>
               {subscriptionsCount}
             </Title>
-            <Text type="secondary">Подписки</Text>
+            <Text type="secondary">Подписчики</Text>
           </div>
           <div style={{ textAlign: "center" }}>
             <Title level={5} style={{ margin: 0 }}>
               {followersCount}
             </Title>
-            <Text type="secondary">Подписчики</Text>
+            <Text type="secondary">Отслеживают</Text>
           </div>
           <div style={{ textAlign: "center" }}>
             <Title level={5} style={{ margin: 0 }}>

@@ -174,7 +174,7 @@ export const FeedProfile = observer(() => {
       }}
     >
       {/* Левая панель профиля */}
-      <div style={{ width: 331, flexShrink: 0 }}>
+      <div style={{ flexShrink: 0 }}>
         <ProfileCard
           avatarFileId={userInfo.avatarFileId}
           userId={userInfo.userId}
