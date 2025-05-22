@@ -9,7 +9,7 @@ import {
   Divider,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import { follow, unfollow, postAvatar } from "../../shared/api";
+import { follow, unfollow, postAvatar, getUser } from "../../shared/api";
 import type { UploadChangeParam } from "antd/es/upload";
 import { AvatarUser } from "../AvatarUser/AvatarUser";
 
@@ -36,11 +36,12 @@ export const ProfileCard: FC<IProfileCardProps> = ({
   userId,
   avatarFileId = "",
 }) => {
+  const [currentAvatarFileId, setCurrentAvatarFileId] =
+    useState<string>(avatarFileId);
   const [messageApi, contextHolder] = message.useMessage();
   const [following, setFollowing] = useState(isFollowed);
   const [loadingFollow, setLoadingFollow] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [avatarVersion, setAvatarVersion] = useState(0);
 
   const handleFollowToggle = async () => {
     setLoadingFollow(true);
@@ -68,16 +69,15 @@ export const ProfileCard: FC<IProfileCardProps> = ({
 
     try {
       await postAvatar({ file });
+      const { avatarFileId: newAvatarFileId } = await getUser(userId);
+      setCurrentAvatarFileId(newAvatarFileId);
       messageApi.success("Аватар обновлён!");
-      setAvatarVersion((prev) => prev + 1);
     } catch {
       messageApi.error("Ошибка при загрузке аватара");
     } finally {
       setUploadingAvatar(false);
     }
   };
-
-  const avatarKey = `${avatarFileId}-${avatarVersion}`;
 
   return (
     <Card
@@ -91,8 +91,7 @@ export const ProfileCard: FC<IProfileCardProps> = ({
       {contextHolder}
       <Space direction="vertical" align="center" style={{ width: "100%" }}>
         <AvatarUser
-          avatarFileId={avatarFileId}
-          key={avatarKey}
+          avatarFileId={currentAvatarFileId}
           size={128}
           showBorder={true}
         />

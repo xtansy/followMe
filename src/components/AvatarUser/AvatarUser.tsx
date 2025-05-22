@@ -69,7 +69,7 @@ export const AvatarUser: FC<IAvatarUserProps> = ({
         URL.revokeObjectURL(blobUrl);
       }
     };
-  }, [avatarFileId, messageApi]);
+  }, [avatarFileId]);
 
   return (
     <>
