@@ -49,3 +49,8 @@ export interface ISubscribeParams {
   hostId: string; // userId
   level: number;
 }
+
+export interface IFileUrl {
+  url: string;
+  mimeType: string;
+}

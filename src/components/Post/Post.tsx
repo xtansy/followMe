@@ -19,7 +19,7 @@ import { ISubscription, type IPost } from "../../shared/types";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/ru";
-import { getPostFiles } from "../../shared/api";
+import { getPostFiles, IFileUrl } from "../../shared/api";
 import { useNavigate } from "react-router";
 import { convertPriceToNumber } from "../../shared/lib";
 import { ConfirmPayModal } from "../ConfirmPayModal/ConfirmPayModal";
@@ -162,17 +162,17 @@ export const OpenPost: FC<IPostProps> = observer(
     const { userStore } = useStore();
     const isOwnPost = userStore.userId === post.user.userId;
 
-    const [imageUrls, setImageUrls] = useState<string[]>([]);
+    const [fileUrls, setFileUrls] = useState<IFileUrl[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-      let currentUrls: string[] = [];
+      let currentUrls: IFileUrl[] = [];
 
       const loadFiles = async () => {
         try {
           setLoading(true);
           const urls = await getPostFiles(post.files);
-          setImageUrls(urls);
+          setFileUrls(urls);
           currentUrls = urls;
         } finally {
           setLoading(false);
@@ -184,7 +184,7 @@ export const OpenPost: FC<IPostProps> = observer(
       }
 
       return () => {
-        currentUrls.forEach((url) => URL.revokeObjectURL(url));
+        currentUrls.forEach((file) => URL.revokeObjectURL(file.url));
       };
     }, [post.files]);
 
@@ -198,11 +198,24 @@ export const OpenPost: FC<IPostProps> = observer(
       }
     };
 
-    const renderPostImages = () => {
-      if (imageUrls.length === 1) {
-        return (
+    const renderPostMedia = () => {
+      if (fileUrls.length === 1) {
+        const file = fileUrls[0];
+
+        return file.mimeType.startsWith("video") ? (
+          <video
+            src={file.url}
+            controls
+            style={{
+              width: "100%",
+              maxHeight: 400,
+              borderRadius: "8px 8px 0 0",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
           <Image
-            src={imageUrls[0]}
+            src={file.url}
             alt="post image"
             preview={{ mask: <span>Просмотр</span> }}
             style={{
@@ -220,30 +233,44 @@ export const OpenPost: FC<IPostProps> = observer(
           style={{
             display: "grid",
             gridTemplateColumns:
-              imageUrls.length === 2
+              fileUrls.length === 2
                 ? "1fr 1fr"
-                : imageUrls.length === 3
+                : fileUrls.length === 3
                 ? "1fr 1fr 1fr"
-                : "repeat(auto-fill, minmax(150px, 1fr))",
+                : "repeat(auto-fill, minmax(200px, 1fr))",
             gap: 8,
             padding: 8,
             paddingTop: 0,
           }}
         >
-          {imageUrls.map((url, index) => (
-            <Image
-              key={post.files[index].fileId}
-              src={url}
-              alt={`post image ${index + 1}`}
-              height={150}
-              style={{
-                objectFit: "cover",
-                borderRadius: 6,
-                width: "100%",
-              }}
-              preview={{ mask: <span>Просмотр</span> }}
-            />
-          ))}
+          {fileUrls.map((file, index) =>
+            file.mimeType.startsWith("video") ? (
+              <video
+                key={post.files[index].fileId}
+                src={file.url}
+                controls
+                style={{
+                  width: "100%",
+                  aspectRatio: "16/9",
+                  objectFit: "cover",
+                  borderRadius: 8,
+                }}
+              />
+            ) : (
+              <Image
+                key={post.files[index].fileId}
+                src={file.url}
+                alt={`post image ${index + 1}`}
+                style={{
+                  width: "100%",
+                  aspectRatio: "16/9",
+                  objectFit: "cover",
+                  borderRadius: 8,
+                }}
+                preview={{ mask: <span>Просмотр</span> }}
+              />
+            )
+          )}
         </div>
       );
     };
@@ -262,8 +289,8 @@ export const OpenPost: FC<IPostProps> = observer(
               avatarFileId={post.user.avatarFileId}
               publishDate={post.publishDate}
             />
-            {imageUrls.length > 0 && (
-              <Image.PreviewGroup>{renderPostImages()}</Image.PreviewGroup>
+            {fileUrls.length > 0 && (
+              <Image.PreviewGroup>{renderPostMedia()}</Image.PreviewGroup>
             )}
           </>
         }

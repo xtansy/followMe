@@ -28,14 +28,30 @@ export const CreatePostModal: FC<ICreatePostModalProps> = ({
 
   const beforeUpload = (file: File) => {
     const isImage = file.type.startsWith("image/");
-    if (!isImage) {
-      messageApi.error("Можно загружать только изображения!");
+    const isVideo = file.type.startsWith("video/");
+
+    if (!isImage && !isVideo) {
+      messageApi.error("Можно загружать только изображения и видео!");
+      return Upload.LIST_IGNORE;
     }
-    const isLt5M = file.size / 1024 / 1024 < 5;
-    if (!isLt5M) {
-      messageApi.error("Изображение должно быть меньше 5MB!");
+
+    if (isImage) {
+      const isLt5M = file.size / 1024 / 1024 < 5;
+      if (!isLt5M) {
+        messageApi.error("Изображение должно быть меньше 5MB!");
+        return Upload.LIST_IGNORE;
+      }
     }
-    return isImage && isLt5M;
+
+    if (isVideo) {
+      const isLt3GB = file.size / 1024 / 1024 / 1024 < 3;
+      if (!isLt3GB) {
+        messageApi.error("Видео должно быть меньше 3GB!");
+        return Upload.LIST_IGNORE;
+      }
+    }
+
+    return false;
   };
 
   const handleChange = (info: UploadChangeParam<UploadFile<any>>) => {
@@ -111,29 +127,29 @@ export const CreatePostModal: FC<ICreatePostModalProps> = ({
         >
           <Select>
             {subscriptions.map((item) => (
-              <Option value={item.level}>{item.title}</Option>
+              <Option value={item.level} key={item.level}>
+                {item.title}
+              </Option>
             ))}
           </Select>
         </Form.Item>
 
-        <Form.Item label="Изображения">
+        <Form.Item label="Файлы (изображения и видео)">
           <Upload
             multiple
-            beforeUpload={(file) => {
-              return beforeUpload(file) ? false : Upload.LIST_IGNORE;
-            }}
+            beforeUpload={beforeUpload}
             onChange={handleChange}
             fileList={fileList}
-            accept="image/*"
+            accept="image/*,video/*"
             showUploadList={{
               showPreviewIcon: false,
               showRemoveIcon: true,
             }}
           >
-            <Button icon={<UploadOutlined />}>Загрузить изображения</Button>
+            <Button icon={<UploadOutlined />}>Загрузить файлы</Button>
           </Upload>
           <div style={{ marginTop: 8, color: "rgba(0, 0, 0, 0.45)" }}>
-            Максимальный размер файла: 5MB
+            Изображения: до 5MB, Видео: до 3GB
           </div>
         </Form.Item>
       </Form>

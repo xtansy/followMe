@@ -1,6 +1,7 @@
 import { api } from "./instance";
 import type { IUserInfo, IPost, ISubscriptionDto } from "../types";
 import type {
+  IFileUrl,
   IFollowParams,
   IGetAllUsersParams,
   IGetLentaPostsParams,
@@ -95,14 +96,18 @@ export const getMyPosts = async ({
   }
 };
 
-export const getFile = async (fileId: string): Promise<string> => {
+export const getFile = async (fileId: string): Promise<IFileUrl> => {
   try {
-    const response = await api.get(`/api/files/${fileId}`, {
+    const { data } = await api.get(`/api/files/${fileId}`, {
       responseType: "blob",
     });
 
-    const blobUrl = URL.createObjectURL(response.data);
-    return blobUrl;
+    const fileObj: IFileUrl = {
+      url: URL.createObjectURL(data),
+      mimeType: data.type,
+    };
+
+    return fileObj;
   } catch (error) {
     console.error("Error fetching file:", error);
     return Promise.reject(error);
@@ -111,7 +116,7 @@ export const getFile = async (fileId: string): Promise<string> => {
 
 export const getPostFiles = async (
   files: Array<{ fileId: string; contentType: string }>
-): Promise<string[]> => {
+): Promise<IFileUrl[]> => {
   try {
     const fileUrls = await Promise.all(
       files.map((file) => getFile(file.fileId))
