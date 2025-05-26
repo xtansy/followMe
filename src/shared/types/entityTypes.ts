@@ -18,6 +18,17 @@ export interface IPost {
   };
   publishDate: string;
   subscription: ISubscription;
+
+  comments: {
+    userInfo: {
+      username: string;
+      email: string;
+      avatarFileId: string;
+      userId: string;
+    };
+    message: string;
+    createdAt: string;
+  }[];
 }
 
 export interface ISubscription {

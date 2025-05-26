@@ -54,3 +54,14 @@ export interface IFileUrl {
   url: string;
   mimeType: string;
 }
+
+export interface ICreateCommentParams {
+  postId: string;
+  userId: string;
+  message: string;
+}
+
+export interface IDeleteCommentParams {
+  postId: string;
+  commentId: string;
+}

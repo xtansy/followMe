@@ -1,4 +1,4 @@
-import { Avatar, Spin, message, theme } from "antd";
+import { Avatar, Spin, theme } from "antd";
 import { FC, useEffect, useState } from "react";
 import { getAvatar } from "../../shared/api";
 import { UserOutlined } from "@ant-design/icons";
@@ -41,20 +41,18 @@ export const AvatarUser: FC<IAvatarUserProps> = ({
 }) => {
   const { token } = useToken();
   const [loading, setLoading] = useState<boolean>(true);
-  const [messageApi, contextHolder] = message.useMessage();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     let blobUrl: string | null = null;
 
-    const fetchAvatar = async (avatarFileId: string) => {
+    const fetchAvatar = async (fileId: string) => {
       try {
         setLoading(true);
-        const url = await getAvatar(avatarFileId);
+        const url = await getAvatar(fileId);
         blobUrl = url;
         setAvatarUrl(url);
       } catch {
-        messageApi.error("Не удалось загрузить аватар");
         setAvatarUrl(null);
       } finally {
         setLoading(false);
@@ -98,7 +96,6 @@ export const AvatarUser: FC<IAvatarUserProps> = ({
           </LoadingOverlay>
         )}
       </AvatarContainer>
-      {contextHolder}
     </>
   );
 };

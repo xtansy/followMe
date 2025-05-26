@@ -1,6 +1,8 @@
 import { api } from "./instance";
 import type { IUserInfo, IPost, ISubscriptionDto } from "../types";
 import type {
+  ICreateCommentParams,
+  IDeleteCommentParams,
   IFileUrl,
   IFollowParams,
   IGetAllUsersParams,
@@ -291,6 +293,36 @@ export const getMySubscribers = async (): Promise<ISubscriptionDto[]> => {
   try {
     const { data } = await api.get<ISubscriptionDto[]>(
       "/subscription/subscribers/list"
+    );
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const createComment = async ({
+  postId,
+  message,
+  userId,
+}: ICreateCommentParams): Promise<any> => {
+  try {
+    const { data } = await api.post(`/api/publications/${postId}/comments`, {
+      userId,
+      message,
+    });
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const deleteComment = async ({
+  postId,
+  commentId,
+}: IDeleteCommentParams): Promise<any> => {
+  try {
+    const { data } = await api.delete(
+      `/api/publications/${postId}/comments/${commentId}`
     );
     return data;
   } catch (error) {

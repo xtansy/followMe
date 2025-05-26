@@ -5,39 +5,50 @@ import {
   Card,
   Image,
   Spin,
-  Space,
   Popconfirm,
   message,
+  Input,
+  List,
+  Space,
 } from "antd";
 import {
   HeartFilled,
   HeartOutlined,
-  LockOutlined,
   DeleteOutlined,
+  SendOutlined,
+  LockOutlined,
 } from "@ant-design/icons";
 import { ISubscription, type IPost } from "../../shared/types";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/ru";
-import { getPostFiles, IFileUrl } from "../../shared/api";
+import {
+  getPostFiles,
+  IFileUrl,
+  createComment,
+  deleteComment,
+} from "../../shared/api";
 import { useNavigate } from "react-router";
-import { convertPriceToNumber } from "../../shared/lib";
-import { ConfirmPayModal } from "../ConfirmPayModal/ConfirmPayModal";
 import { observer } from "mobx-react-lite";
 import { useStore } from "../../store/context";
 import { deleteMyPost } from "../../shared/api";
 import { AvatarUser } from "../AvatarUser/AvatarUser";
+import { convertPriceToNumber } from "../../shared/lib";
+import { ConfirmPayModal } from "../ConfirmPayModal/ConfirmPayModal";
 
 dayjs.extend(relativeTime);
 dayjs.locale("ru");
 
 const { Text, Title } = Typography;
+const { TextArea } = Input;
 
 interface IPostProps {
   post: IPost;
   onLike?: (id: string) => void;
   isAuthenticated?: boolean;
   onDeletePost?: (id: string) => void;
+  onCommentAdded?: (postId: string, newComment: IPost["comments"][0]) => void;
+  // onCommentDeleted?: (postId: string, commentId: string) => void;
 }
 
 const AuthorHeader: FC<{
@@ -157,13 +168,15 @@ export const PostLockedMessage: FC<PostLockedMessageProps> = ({
 
 export const OpenPost: FC<IPostProps> = observer(
   ({ post, onLike, isAuthenticated, onDeletePost }) => {
+    const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
-
     const { userStore } = useStore();
     const isOwnPost = userStore.userId === post.user.userId;
 
     const [fileUrls, setFileUrls] = useState<IFileUrl[]>([]);
     const [loading, setLoading] = useState(false);
+    const [newComment, setNewComment] = useState("");
+    const [commentLoading, setCommentLoading] = useState(false);
 
     useEffect(() => {
       let currentUrls: IFileUrl[] = [];
@@ -195,6 +208,39 @@ export const OpenPost: FC<IPostProps> = observer(
         messageApi.success("Пост удалён");
       } catch {
         messageApi.error("Не удалось удалить пост");
+      }
+    };
+
+    const handleAddComment = async () => {
+      if (!newComment.trim() || !userStore.userId) return;
+
+      try {
+        setCommentLoading(true);
+        await createComment({
+          postId: post.id,
+          message: newComment,
+          userId: userStore.userId,
+        });
+        setNewComment("");
+        messageApi.success("Комментарий добавлен");
+      } catch {
+        messageApi.error("Не удалось добавить комментарий");
+      } finally {
+        setCommentLoading(false);
+      }
+    };
+
+    const handleDeleteComment = async (index: number) => {
+      try {
+        const comment = post.comments[index];
+        await deleteComment({
+          postId: post.id,
+          commentId: comment.message, //
+        });
+
+        messageApi.success("Комментарий удалён");
+      } catch {
+        messageApi.error("Не удалось удалить комментарий");
       }
     };
 
@@ -333,6 +379,73 @@ export const OpenPost: FC<IPostProps> = observer(
             </Button>
           </div>
         )}
+
+        <div style={{ marginTop: 24 }}>
+          <Title level={5}>Комментарии ({post.comments?.length || 0})</Title>
+
+          {isAuthenticated && (
+            <div style={{ marginBottom: 16 }}>
+              <TextArea
+                rows={3}
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Написать комментарий..."
+                style={{ marginBottom: 8 }}
+              />
+              <Button
+                type="primary"
+                icon={<SendOutlined />}
+                onClick={handleAddComment}
+                loading={commentLoading}
+                disabled={!newComment.trim()}
+              >
+                Отправить
+              </Button>
+            </div>
+          )}
+
+          <List
+            dataSource={post.comments || []}
+            renderItem={(comment, index) => (
+              <List.Item
+                style={{ padding: "12px 0", alignItems: "flex-start" }}
+                actions={[
+                  userStore.userId === comment.userInfo.userId && (
+                    <Button
+                      type="text"
+                      danger
+                      size="small"
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDeleteComment(index)}
+                    />
+                  ),
+                ]}
+              >
+                <List.Item.Meta
+                  avatar={
+                    <AvatarUser
+                      onClick={() =>
+                        navigate(`/profile/${comment.userInfo.userId}`)
+                      }
+                      size="default"
+                      avatarFileId={comment.userInfo.avatarFileId}
+                    />
+                  }
+                  title={<Text strong>{comment.userInfo.username}</Text>}
+                  description={
+                    <>
+                      <Text>{comment.message}</Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        {dayjs(comment.createdAt).fromNow()}
+                      </Text>
+                    </>
+                  }
+                />
+              </List.Item>
+            )}
+          />
+        </div>
       </Card>
     );
   }
