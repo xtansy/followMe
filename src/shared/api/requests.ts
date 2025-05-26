@@ -96,35 +96,46 @@ export const getMyPosts = async ({
   }
 };
 
-export const getFile = async (fileId: string): Promise<IFileUrl> => {
-  try {
-    const { data } = await api.get(`/api/files/${fileId}`, {
-      responseType: "blob",
-    });
+// export const getFile = async (fileId: string): Promise<IFileUrl> => {
+//   try {
+//     const { data } = await api.get(`/api/files/${fileId}`, {
+//       responseType: "blob",
+//     });
 
-    const fileObj: IFileUrl = {
-      url: URL.createObjectURL(data),
-      mimeType: data.type,
-    };
+//     const fileObj: IFileUrl = {
+//       url: URL.createObjectURL(data),
+//       mimeType: data.type,
+//     };
 
-    return fileObj;
-  } catch (error) {
-    console.error("Error fetching file:", error);
-    return Promise.reject(error);
-  }
-};
+//     return fileObj;
+//   } catch (error) {
+//     console.error("Error fetching file:", error);
+//     return Promise.reject(error);
+//   }
+// };
 
 export const getPostFiles = async (
   files: Array<{ fileId: string; contentType: string }>
 ): Promise<IFileUrl[]> => {
   try {
     const fileUrls = await Promise.all(
-      files.map((file) => getFile(file.fileId))
+      files.map(async ({ fileId, contentType }) => {
+        const { data } = await api.get(`/api/files/${fileId}`, {
+          responseType: "blob",
+        });
+
+        const blob = new Blob([data], { type: contentType });
+        return {
+          url: URL.createObjectURL(blob),
+          mimeType: contentType,
+        };
+      })
     );
+
     return fileUrls;
   } catch (error) {
     console.error("Error fetching post files:", error);
-    return Promise.reject(error);
+    return [];
   }
 };
 
