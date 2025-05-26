@@ -23,7 +23,7 @@ import {
   FireOutlined,
 } from "@ant-design/icons";
 import { useState, useEffect } from "react";
-import { convertPriceToNumber } from "../../shared/lib";
+import { calculateExpiresAt, convertPriceToNumber } from "../../shared/lib";
 import { type ISubscriptionDto } from "../../shared/types";
 import { getMySubscribers } from "../../shared/api";
 import { CardDummy } from "../../shared/ui";
@@ -169,7 +169,8 @@ export const Income = () => {
 
   const currentMonthIncome = subscriptions
     .filter(({ subscription }) => {
-      const date = new Date(subscription.expiresAt);
+      const expiresAt = calculateExpiresAt(subscription.daysLeft);
+      const date = new Date(expiresAt);
       const now = new Date();
       return (
         date.getMonth() === now.getMonth() &&
@@ -185,16 +186,20 @@ export const Income = () => {
     ({ subscription }) => subscription.isActive
   ).length;
 
-  const transactions = subscriptions.map(({ host, subscription }) => ({
-    id: host.userId,
-    date: subscription.expiresAt,
-    amount: convertPriceToNumber(subscription.price),
-    user: host.username,
-    userId: host.userId,
-    subscriptionTitle: subscription.title,
-    level: subscription.level,
-    isActive: subscription.isActive,
-  }));
+  const transactions = subscriptions.map(({ host, subscription }) => {
+    const expiresAt = calculateExpiresAt(subscription.daysLeft);
+
+    return {
+      id: host.userId,
+      date: expiresAt,
+      amount: convertPriceToNumber(subscription.price),
+      user: host.username,
+      userId: host.userId,
+      subscriptionTitle: subscription.title,
+      level: subscription.level,
+      isActive: subscription.isActive,
+    };
+  });
 
   const columns = [
     {

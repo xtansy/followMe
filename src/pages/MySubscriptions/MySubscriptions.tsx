@@ -7,6 +7,7 @@ import {
   Space,
   Spin,
   message,
+  Tooltip,
 } from "antd";
 import {
   CrownOutlined,
@@ -18,7 +19,7 @@ import {
 } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { convertPriceToNumber } from "../../shared/lib";
+import { calculateExpiresAt, convertPriceToNumber } from "../../shared/lib";
 import { type ISubscriptionDto } from "../../shared/types";
 import { getMySubscriptionsToUser } from "../../shared/api";
 import { CardDummy } from "../../shared/ui";
@@ -40,13 +41,6 @@ const formatDate = (dateString: string) => {
     day: "numeric",
   };
   return new Date(dateString).toLocaleDateString("ru-RU", options);
-};
-
-const getDaysLeft = (expirationDate: string) => {
-  const now = new Date();
-  const expireDate = new Date(expirationDate);
-  const diffTime = expireDate.getTime() - now.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };
 
 const dayDeclension = (days: number) => {
@@ -74,7 +68,8 @@ const dayDeclension = (days: number) => {
 //       title: "Премиум подписка",
 //       price: { units: 500, nanos: 0 },
 //       isActive: true,
-//       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+//       daysLeft: 4,
+//       isFrozen: true,
 //       level: 2,
 //     },
 //   },
@@ -95,7 +90,8 @@ const dayDeclension = (days: number) => {
 //       title: "Базовый +",
 //       price: { units: 200, nanos: 0 },
 //       isActive: true,
-//       expiresAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+//       daysLeft: 4,
+//       isFrozen: false,
 //       level: 1,
 //     },
 //   },
@@ -116,7 +112,8 @@ const dayDeclension = (days: number) => {
 //       title: "Гигаподписка",
 //       price: { units: 1000, nanos: 0 },
 //       isActive: false,
-//       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+//       daysLeft: 4,
+//       isFrozen: false,
 //       level: 3,
 //     },
 //   },
@@ -137,11 +134,16 @@ const dayDeclension = (days: number) => {
 //       title: "Премиум+",
 //       price: { units: 750, nanos: 0 },
 //       isActive: true,
-//       expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+//       daysLeft: 4,
+//       isFrozen: false,
 //       level: 2,
 //     },
 //   },
 // ];
+
+const SnowflakeIcon = () => (
+  <span style={{ color: "#1890ff", fontSize: "1.2em" }}>❄️</span>
+);
 
 export const MySubscriptions = () => {
   const [subscriptions, setSubscriptions] = useState<ISubscriptionDto[]>([]);
@@ -154,7 +156,23 @@ export const MySubscriptions = () => {
     navigate(`/profile/${userId}`);
   };
 
-  const renderExpirationAlert = (expiresAt: string, isActive: boolean) => {
+  const renderExpirationAlert = (
+    daysLeft: number,
+    isActive: boolean,
+    isFrozen: boolean
+  ) => {
+    const expiresAt = calculateExpiresAt(daysLeft);
+
+    if (isFrozen) {
+      return (
+        <Tooltip title="Подписка заморожена. Дни не списываются">
+          <Space>
+            <SnowflakeIcon />
+            <Text type="secondary">Заморожена до: {formatDate(expiresAt)}</Text>
+          </Space>
+        </Tooltip>
+      );
+    }
     if (!isActive) {
       return (
         <Space>
@@ -163,8 +181,6 @@ export const MySubscriptions = () => {
         </Space>
       );
     }
-
-    const daysLeft = getDaysLeft(expiresAt);
 
     if (daysLeft < 0) {
       return (
@@ -274,8 +290,9 @@ export const MySubscriptions = () => {
                         {convertPriceToNumber(subscription.price)} руб.
                       </Text>
                       {renderExpirationAlert(
-                        subscription.expiresAt,
-                        subscription.isActive
+                        subscription.daysLeft,
+                        subscription.isActive,
+                        subscription.isFrozen
                       )}
                     </Space>
                   }
@@ -291,6 +308,11 @@ export const MySubscriptions = () => {
                     title={
                       <a onClick={() => handleAuthorClick(host.userId)}>
                         {host.username}
+                        {subscription.isFrozen && (
+                          <Tooltip title="Подписка заморожена">
+                            <span style={{ marginLeft: 8 }}>❄️</span>
+                          </Tooltip>
+                        )}
                       </a>
                     }
                     description={

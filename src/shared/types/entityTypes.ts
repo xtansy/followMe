@@ -73,7 +73,8 @@ export interface ISubscriptionDto {
       nanos: number;
     };
     isActive: boolean;
-    expiresAt: string;
+    daysLeft: number;
+    isFrozen: boolean;
     level: number;
   };
 }
