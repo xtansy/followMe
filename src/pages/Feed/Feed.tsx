@@ -1,7 +1,7 @@
 import "./styles.scss";
 
-import { useEffect, useState } from "react";
-import { List } from "antd";
+import { useCallback, useEffect, useState } from "react";
+import { Input, List } from "antd";
 
 import { ISubscription, type IPost } from "../../shared/types/entityTypes";
 import { Post, CreatePostWidget } from "../../components";
@@ -16,6 +16,7 @@ import { useStore } from "../../store/context";
 import { SUBSCRIPTIONS_MOCK } from "../../shared/constants";
 import { like, unlike } from "../../shared/api";
 import { CardDummy } from "../../shared/ui";
+import { SearchOutlined } from "@ant-design/icons";
 
 // const mockPosts: IPost[] = [
 //   {
@@ -70,9 +71,11 @@ import { CardDummy } from "../../shared/ui";
 export const Feed = observer(() => {
   const { userStore } = useStore();
   const [posts, setPosts] = useState<IPost[]>([]);
-
+  const [filteredPosts, setFilteredPosts] = useState<IPost[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [subscriptions, setSubscriptions] =
     useState<ISubscription[]>(SUBSCRIPTIONS_MOCK);
+  const [searchTimeout, setSearchTimeout] = useState<any>(null);
 
   const onLike = (postId: string) => {
     setPosts((prevPosts) =>
@@ -146,20 +149,69 @@ export const Feed = observer(() => {
     });
   }, [userStore.userId]);
 
+  const filterPosts = useCallback((query: string, postsList: IPost[]) => {
+    if (!query.trim()) {
+      return postsList;
+    }
+
+    const lowerCaseQuery = query.toLowerCase();
+    return postsList.filter(
+      (post) =>
+        post.title.toLowerCase().includes(lowerCaseQuery) ||
+        post.availableBody.toLowerCase().includes(lowerCaseQuery)
+    );
+  }, []);
+
+  const handleSearch = useCallback(
+    (query: string) => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+
+      const timeout = setTimeout(() => {
+        setFilteredPosts(filterPosts(query, posts));
+      }, 300);
+
+      setSearchTimeout(timeout);
+    },
+    [filterPosts, posts, searchTimeout]
+  );
+
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    handleSearch(query);
+  };
+
+  useEffect(() => {
+    setFilteredPosts(filterPosts(searchQuery, posts));
+  }, [posts, searchQuery, filterPosts]);
+
   return (
     <div className="feed-page">
       <div className="feed-container">
         {userStore.isAuthenticated && (
-          <CreatePostWidget
-            onSubmit={handleCreatePost}
-            subscriptions={subscriptions}
-          />
+          <>
+            <div className="search-container">
+              <Input
+                placeholder="Поиск по названию или описанию"
+                prefix={<SearchOutlined />}
+                value={searchQuery}
+                onChange={onSearchChange}
+                allowClear
+              />
+            </div>
+            <CreatePostWidget
+              onSubmit={handleCreatePost}
+              subscriptions={subscriptions}
+            />
+          </>
         )}
         {userStore.isAuthenticated ? (
           <>
-            {posts.length > 0 ? (
+            {filteredPosts.length > 0 ? (
               <List
-                dataSource={posts}
+                dataSource={filteredPosts}
                 itemLayout="vertical"
                 renderItem={(post) => (
                   <List.Item key={post.id}>
@@ -176,9 +228,16 @@ export const Feed = observer(() => {
             ) : (
               <div style={{ marginTop: "30px" }}>
                 <CardDummy
-                  title="В Вашей ленте еще нет постов"
-                  subtitle="Подпишитесь на интересных авторов, чтобы получить доступ к
-              эксклюзивному контенту"
+                  title={
+                    searchQuery
+                      ? "Ничего не найдено"
+                      : "В Вашей ленте еще нет постов"
+                  }
+                  subtitle={
+                    searchQuery
+                      ? "Попробуйте изменить поисковый запрос"
+                      : "Подпишитесь на интересных авторов, чтобы получить доступ к эксклюзивному контенту"
+                  }
                 />
               </div>
             )}

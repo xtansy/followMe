@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Space, Card } from "antd";
+import { useCallback, useEffect, useState } from "react";
+import { Space, Card, Input } from "antd";
 
 import type { IPost, ISubscription, IUserInfo } from "../../shared/types";
 import {
@@ -25,6 +25,7 @@ import { useStore } from "../../store/context";
 import { observer } from "mobx-react-lite";
 import { SUBSCRIPTIONS_MOCK } from "../../shared/constants";
 import { CardDummy } from "../../shared/ui";
+import { SearchOutlined } from "@ant-design/icons";
 
 // const POSTS_MOCK: IPost[] = [
 //   {
@@ -84,6 +85,10 @@ export const FeedProfile = observer(() => {
   const [posts, setPosts] = useState<IPost[]>([]);
   const [subscriptions, setSubscriptions] =
     useState<ISubscription[]>(SUBSCRIPTIONS_MOCK);
+
+  const [filteredPosts, setFilteredPosts] = useState<IPost[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchTimeout, setSearchTimeout] = useState<any>(null);
 
   const isOwnProfile = userStore.userId === id;
 
@@ -174,6 +179,48 @@ export const FeedProfile = observer(() => {
     );
   };
 
+  const filterPosts = useCallback((query: string, postsList: IPost[]) => {
+    if (!query.trim()) {
+      return postsList;
+    }
+
+    const lowerCaseQuery = query.toLowerCase();
+    return postsList.filter(
+      (post) =>
+        post.title.toLowerCase().includes(lowerCaseQuery) ||
+        post.availableBody.toLowerCase().includes(lowerCaseQuery)
+    );
+  }, []);
+
+  const handleSearch = useCallback(
+    (query: string) => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+
+      const timeout = setTimeout(() => {
+        setFilteredPosts(filterPosts(query, posts));
+      }, 300);
+
+      setSearchTimeout(timeout);
+    },
+    [filterPosts, posts, searchTimeout]
+  );
+
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    handleSearch(query);
+  };
+
+  useEffect(() => {
+    setFilteredPosts(filterPosts(searchQuery, posts));
+  }, [posts, searchQuery, filterPosts]);
+
+  useEffect(() => {
+    setFilteredPosts(filterPosts(searchQuery, posts));
+  }, [posts, searchQuery, filterPosts]);
+
   useEffect(() => {
     if (id) {
       getUser(id).then((user) => setUserInfo(user));
@@ -218,19 +265,31 @@ export const FeedProfile = observer(() => {
       {/* Центральная колонка с постами */}
       <div style={{ maxWidth: 750, flexShrink: 0, width: "100%" }}>
         {isOwnProfile && (
-          <div style={{ marginBottom: "10px" }}>
-            <CreatePostWidget
-              onSubmit={onSubmitPost}
-              subscriptions={subscriptions}
-            />
-          </div>
+          <>
+            <div style={{ marginBottom: 16 }}>
+              <Input
+                placeholder="Поиск по названию или описанию"
+                prefix={<SearchOutlined />}
+                value={searchQuery}
+                onChange={onSearchChange}
+                allowClear
+                style={{ borderRadius: 8 }}
+              />
+            </div>
+            <div style={{ marginBottom: "10px" }}>
+              <CreatePostWidget
+                onSubmit={onSubmitPost}
+                subscriptions={subscriptions}
+              />
+            </div>
+          </>
         )}
 
-        {posts.length > 0 ? (
+        {filteredPosts.length > 0 ? (
           <div
             style={{ display: "flex", flexDirection: "column", gap: "10px" }}
           >
-            {posts.map((post) => (
+            {filteredPosts.map((post) => (
               <Post
                 onCommentAdded={onCommentAdded}
                 onCommentDeleted={onCommentDeleted}
@@ -244,8 +303,12 @@ export const FeedProfile = observer(() => {
         ) : isOwnProfile ? (
           <div style={{ marginTop: "30px" }}>
             <CardDummy
-              title="У вас еще нет постов"
-              subtitle="Создавайте интересные посты, чтобы привлечь подписчиков на Ваш контент"
+              title={searchQuery ? "Ничего не найдено" : "У вас еще нет постов"}
+              subtitle={
+                searchQuery
+                  ? "Попробуйте изменить поисковый запрос"
+                  : "Создавайте интересные посты, чтобы привлечь подписчиков на Ваш контент"
+              }
             />
           </div>
         ) : (

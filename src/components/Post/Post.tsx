@@ -415,47 +415,49 @@ export const OpenPost: FC<IPostProps> = observer(
             </div>
           )}
 
-          <List
-            dataSource={post.comments || []}
-            renderItem={(comment, index) => (
-              <List.Item
-                style={{ padding: "12px 0", alignItems: "flex-start" }}
-                actions={[
-                  userStore.userId === comment.userInfo.userId && (
-                    <Button
-                      type="text"
-                      danger
-                      size="small"
-                      icon={<DeleteOutlined />}
-                      onClick={() => handleDeleteComment(index)}
-                    />
-                  ),
-                ]}
-              >
-                <List.Item.Meta
-                  avatar={
-                    <AvatarUser
-                      onClick={() =>
-                        navigate(`/profile/${comment.userInfo.userId}`)
-                      }
-                      size="default"
-                      avatarFileId={comment.userInfo.avatarFileId}
-                    />
-                  }
-                  title={<Text strong>{comment.userInfo.username}</Text>}
-                  description={
-                    <>
-                      <Text>{comment.message}</Text>
-                      <br />
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        {dayjs(comment.createdAt).fromNow()}
-                      </Text>
-                    </>
-                  }
-                />
-              </List.Item>
-            )}
-          />
+          {post.comments.length > 0 && (
+            <List
+              dataSource={post.comments}
+              renderItem={(comment, index) => (
+                <List.Item
+                  style={{ padding: "12px 0", alignItems: "flex-start" }}
+                  actions={[
+                    userStore.userId === comment.userInfo.userId && (
+                      <Button
+                        type="text"
+                        danger
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleDeleteComment(index)}
+                      />
+                    ),
+                  ]}
+                >
+                  <List.Item.Meta
+                    avatar={
+                      <AvatarUser
+                        onClick={() =>
+                          navigate(`/profile/${comment.userInfo.userId}`)
+                        }
+                        size="default"
+                        avatarFileId={comment.userInfo.avatarFileId}
+                      />
+                    }
+                    title={<Text strong>{comment.userInfo.username}</Text>}
+                    description={
+                      <>
+                        <Text>{comment.message}</Text>
+                        <br />
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                          {dayjs(comment.createdAt).fromNow()}
+                        </Text>
+                      </>
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+          )}
         </div>
       </Card>
     );
