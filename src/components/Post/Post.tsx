@@ -1,5 +1,6 @@
 import {
   DeleteOutlined,
+  EditOutlined,
   HeartFilled,
   HeartOutlined,
   LockOutlined,
@@ -35,6 +36,7 @@ import { ISubscription, type IPost } from "../../shared/types";
 import { useStore } from "../../store/context";
 import { AvatarUser } from "../AvatarUser/AvatarUser";
 import { ConfirmPayModal } from "../ConfirmPayModal/ConfirmPayModal";
+import { EditPostModal } from "../EditPostModal/EditPostModal";
 
 dayjs.extend(relativeTime);
 dayjs.locale("ru");
@@ -177,6 +179,7 @@ export const OpenPost: FC<IPostProps> = observer(
   }) => {
     const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
+    const [editingPost, setEditingPost] = useState<IPost | null>(null);
     const { userStore } = useStore();
     const isOwnPost = userStore.userId === post.user.userId;
 
@@ -353,6 +356,33 @@ export const OpenPost: FC<IPostProps> = observer(
         }
       >
         {contextHolder}
+        {isOwnPost && (
+          <>
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => setEditingPost(post)}
+              style={{ position: "absolute", top: 12, right: 48 }}
+            />
+            <Button
+              danger
+              type="text"
+              icon={<DeleteOutlined />}
+              style={{ position: "absolute", top: 12, right: 12 }}
+            />
+          </>
+        )}
+        {editingPost && (
+          <EditPostModal
+            subscriptions={[]}
+            visible={!!editingPost}
+            post={editingPost}
+            onCancel={() => setEditingPost(null)}
+            onSuccess={() => {
+              setEditingPost(null);
+            }}
+          />
+        )}
         {isOwnPost && (
           <Popconfirm
             title="Удалить пост?"

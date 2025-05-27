@@ -65,3 +65,8 @@ export interface IDeleteCommentParams {
   postId: string;
   commentId: string;
 }
+
+export interface IEditPostParams {
+  postId: string;
+  description: string;
+}

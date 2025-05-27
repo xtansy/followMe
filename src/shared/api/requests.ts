@@ -3,6 +3,7 @@ import type { IUserInfo, IPost, ISubscriptionDto } from "../types";
 import type {
   ICreateCommentParams,
   IDeleteCommentParams,
+  IEditPostParams,
   IFileUrl,
   IFollowParams,
   IGetAllUsersParams,
@@ -324,6 +325,23 @@ export const deleteComment = async ({
     const { data } = await api.delete(
       `/api/publications/${postId}/comments/${commentId}`
     );
+    return data;
+  } catch (error) {
+    return Promise.reject(error);
+  }
+};
+
+export const editPost = async ({
+  postId,
+  description,
+}: IEditPostParams): Promise<any> => {
+  try {
+    const { data } = await api.patch(`/api/publications/${postId}`, {
+      title: null,
+      description,
+      requiredLevel: null,
+      files: null,
+    });
     return data;
   } catch (error) {
     return Promise.reject(error);
