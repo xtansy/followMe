@@ -205,8 +205,8 @@ export const Income = () => {
   const columns = [
     {
       title: "Дата оформления",
-      dataIndex: "date",
-      key: "date",
+      dataIndex: "orderDate",
+      key: "orderDate",
       width: 120,
       render: (text: string) => (
         <Text style={{ color: "#666" }}>
