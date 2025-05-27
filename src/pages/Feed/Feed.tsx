@@ -108,6 +108,34 @@ export const Feed = observer(() => {
     }
   };
 
+  const onCommentAdded = (postId: string, newComment: IPost["comments"][0]) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: [...(post.comments || []), newComment],
+            }
+          : post
+      )
+    );
+  };
+
+  const onCommentDeleted = (postId: string, commentId: string) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: post.comments.filter(
+                (comment) => comment.id !== commentId
+              ),
+            }
+          : post
+      )
+    );
+  };
+
   useEffect(() => {
     fetchSubscriptions(userStore.userId);
   }, [userStore.userId]);
@@ -136,6 +164,8 @@ export const Feed = observer(() => {
                 renderItem={(post) => (
                   <List.Item key={post.id}>
                     <Post
+                      onCommentAdded={onCommentAdded}
+                      onCommentDeleted={onCommentDeleted}
                       post={post}
                       onLike={onLike}
                       isAuthenticated={userStore.isAuthenticated}

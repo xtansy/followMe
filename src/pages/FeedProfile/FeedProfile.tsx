@@ -146,6 +146,34 @@ export const FeedProfile = observer(() => {
     setPosts(newPosts);
   };
 
+  const onCommentAdded = (postId: string, newComment: IPost["comments"][0]) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: [...(post.comments || []), newComment],
+            }
+          : post
+      )
+    );
+  };
+
+  const onCommentDeleted = (postId: string, commentId: string) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: post.comments.filter(
+                (comment) => comment.id !== commentId
+              ),
+            }
+          : post
+      )
+    );
+  };
+
   useEffect(() => {
     if (id) {
       getUser(id).then((user) => setUserInfo(user));
@@ -204,6 +232,8 @@ export const FeedProfile = observer(() => {
           >
             {posts.map((post) => (
               <Post
+                onCommentAdded={onCommentAdded}
+                onCommentDeleted={onCommentDeleted}
                 key={post.id}
                 post={post}
                 onLike={handleLike}

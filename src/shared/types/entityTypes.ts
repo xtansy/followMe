@@ -20,9 +20,10 @@ export interface IPost {
   subscription: ISubscription;
 
   comments: {
+    id: string;
     userInfo: {
       username: string;
-      email: string;
+      email?: string;
       avatarFileId: string;
       userId: string;
     };

@@ -1,39 +1,39 @@
-import { FC, useEffect, useState } from "react";
 import {
-  Typography,
+  DeleteOutlined,
+  HeartFilled,
+  HeartOutlined,
+  LockOutlined,
+  SendOutlined,
+} from "@ant-design/icons";
+import {
   Button,
   Card,
   Image,
-  Spin,
-  Popconfirm,
-  message,
   Input,
   List,
+  Popconfirm,
   Space,
+  Spin,
+  Typography,
+  message,
 } from "antd";
-import {
-  HeartFilled,
-  HeartOutlined,
-  DeleteOutlined,
-  SendOutlined,
-  LockOutlined,
-} from "@ant-design/icons";
-import { ISubscription, type IPost } from "../../shared/types";
 import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/ru";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { observer } from "mobx-react-lite";
+import { FC, useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import {
-  getPostFiles,
   IFileUrl,
   createComment,
   deleteComment,
+  deleteMyPost,
+  getPostFiles,
 } from "../../shared/api";
-import { useNavigate } from "react-router";
-import { observer } from "mobx-react-lite";
-import { useStore } from "../../store/context";
-import { deleteMyPost } from "../../shared/api";
-import { AvatarUser } from "../AvatarUser/AvatarUser";
 import { convertPriceToNumber } from "../../shared/lib";
+import { ISubscription, type IPost } from "../../shared/types";
+import { useStore } from "../../store/context";
+import { AvatarUser } from "../AvatarUser/AvatarUser";
 import { ConfirmPayModal } from "../ConfirmPayModal/ConfirmPayModal";
 
 dayjs.extend(relativeTime);
@@ -48,7 +48,7 @@ interface IPostProps {
   isAuthenticated?: boolean;
   onDeletePost?: (id: string) => void;
   onCommentAdded?: (postId: string, newComment: IPost["comments"][0]) => void;
-  // onCommentDeleted?: (postId: string, commentId: string) => void;
+  onCommentDeleted?: (postId: string, commentId: string) => void;
 }
 
 const AuthorHeader: FC<{
@@ -167,7 +167,14 @@ export const PostLockedMessage: FC<PostLockedMessageProps> = ({
 };
 
 export const OpenPost: FC<IPostProps> = observer(
-  ({ post, onLike, isAuthenticated, onDeletePost }) => {
+  ({
+    post,
+    onLike,
+    isAuthenticated,
+    onDeletePost,
+    onCommentAdded,
+    onCommentDeleted,
+  }) => {
     const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
     const { userStore } = useStore();
@@ -216,11 +223,13 @@ export const OpenPost: FC<IPostProps> = observer(
 
       try {
         setCommentLoading(true);
-        await createComment({
+        const newPostObj = await createComment({
           postId: post.id,
           message: newComment,
           userId: userStore.userId,
         });
+
+        onCommentAdded?.(post.id, newPostObj);
         setNewComment("");
         messageApi.success("Комментарий добавлен");
       } catch {
@@ -235,8 +244,10 @@ export const OpenPost: FC<IPostProps> = observer(
         const comment = post.comments[index];
         await deleteComment({
           postId: post.id,
-          commentId: comment.message, //
+          commentId: comment.id,
         });
+
+        onCommentDeleted?.(post.id, comment.id);
 
         messageApi.success("Комментарий удалён");
       } catch {
@@ -456,9 +467,13 @@ export const Post: FC<IPostProps> = ({
   onLike,
   isAuthenticated = true,
   onDeletePost,
+  onCommentAdded,
+  onCommentDeleted,
 }) => {
   return post.fullContent ? (
     <OpenPost
+      onCommentAdded={onCommentAdded}
+      onCommentDeleted={onCommentDeleted}
       onDeletePost={onDeletePost}
       post={post}
       onLike={onLike}
