@@ -168,7 +168,7 @@ export const MySubscriptions = () => {
         <Tooltip title="Подписка заморожена. Дни не списываются">
           <Space>
             <SnowflakeIcon />
-            <Text type="secondary">Заморожена до: {formatDate(expiresAt)}</Text>
+            <Text type="secondary">Осталось дней: {daysLeft}</Text>
           </Space>
         </Tooltip>
       );

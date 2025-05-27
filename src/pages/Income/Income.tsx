@@ -169,8 +169,7 @@ export const Income = () => {
 
   const currentMonthIncome = subscriptions
     .filter(({ subscription }) => {
-      const expiresAt = calculateExpiresAt(subscription.daysLeft);
-      const date = new Date(expiresAt);
+      const date = new Date(subscription.orderDate);
       const now = new Date();
       return (
         date.getMonth() === now.getMonth() &&
@@ -198,12 +197,14 @@ export const Income = () => {
       subscriptionTitle: subscription.title,
       level: subscription.level,
       isActive: subscription.isActive,
+      isFrozen: subscription.isFrozen,
+      orderDate: subscription.orderDate
     };
   });
 
   const columns = [
     {
-      title: "Дата окончания",
+      title: "Дата оформления",
       dataIndex: "date",
       key: "date",
       width: 120,
@@ -257,8 +258,12 @@ export const Income = () => {
       key: "isActive",
       width: 120,
       render: (record: any) => (
-        <Tag color={record.isActive ? "green" : "red"}>
-          {record.isActive ? "Активна" : "Неактивна"}
+        <Tag color={record.isFrozen ? "blue" : record.isActive ? "green" : "red"}>
+          {record.isFrozen
+            ? "Заморожена"
+            : record.isActive
+            ? "Активна"
+            : "Неактивна"}
         </Tag>
       ),
     },

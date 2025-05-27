@@ -76,6 +76,7 @@ export interface ISubscriptionDto {
     daysLeft: number;
     isFrozen: boolean;
     level: number;
+    orderDate: string;
   };
 }
 
