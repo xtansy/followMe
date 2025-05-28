@@ -52,6 +52,7 @@ interface IPostProps {
   onDeletePost?: (id: string) => void;
   onCommentAdded?: (postId: string, newComment: IPost["comments"][0]) => void;
   onCommentDeleted?: (postId: string, commentId: string) => void;
+  onEditPost?: (postId: string, description: string) => void;
 }
 
 const AuthorHeader: FC<{
@@ -177,6 +178,7 @@ export const OpenPost: FC<IPostProps> = observer(
     onDeletePost,
     onCommentAdded,
     onCommentDeleted,
+    onEditPost,
   }) => {
     const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
@@ -185,7 +187,7 @@ export const OpenPost: FC<IPostProps> = observer(
     const isOwnPost = userStore.userId === post.user.userId;
 
     const [fileUrls, setFileUrls] = useState<IFileUrl[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [mediaLoading, setMediaLoading] = useState(false); // переименовано из loading
     const [newComment, setNewComment] = useState("");
     const [commentLoading, setCommentLoading] = useState(false);
 
@@ -194,16 +196,15 @@ export const OpenPost: FC<IPostProps> = observer(
 
       const loadFiles = async () => {
         try {
-          console.log(post.files)
-          setLoading(true);
+          setMediaLoading(true);
           const urls = post.files.map(file => ({
-            url: file.fileId,
-            mimeType: file.contentType
-          }));
+                      url: file.fileId,
+                      mimeType: file.contentType
+                    }));
            setFileUrls(urls);
            currentUrls = urls;
         } finally {
-          setLoading(false);
+          setMediaLoading(false);
         }
       };
 
@@ -264,6 +265,21 @@ export const OpenPost: FC<IPostProps> = observer(
     };
 
     const renderPostMedia = () => {
+      if (mediaLoading) {
+        return (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: 200,
+            }}
+          >
+            <Spin />
+          </div>
+        );
+      }
+
       if (fileUrls.length === 1) {
         const file = fileUrls[0];
 
@@ -340,8 +356,6 @@ export const OpenPost: FC<IPostProps> = observer(
       );
     };
 
-    if (loading) return <Spin />;
-
     return (
       <Card
         className="post-card"
@@ -354,7 +368,7 @@ export const OpenPost: FC<IPostProps> = observer(
               avatarFileId={post.user.avatarFileId}
               publishDate={post.publishDate}
             />
-            {fileUrls.length > 0 && (
+            {post.files.length > 0 && (
               <Image.PreviewGroup>{renderPostMedia()}</Image.PreviewGroup>
             )}
           </>
@@ -383,8 +397,9 @@ export const OpenPost: FC<IPostProps> = observer(
             visible={!!editingPost}
             post={editingPost}
             onCancel={() => setEditingPost(null)}
-            onSuccess={() => {
+            onSuccess={(postId, description) => {
               setEditingPost(null);
+              onEditPost?.(postId, description);
             }}
           />
         )}
@@ -506,9 +521,11 @@ export const Post: FC<IPostProps> = ({
   onDeletePost,
   onCommentAdded,
   onCommentDeleted,
+  onEditPost,
 }) => {
   return post.fullContent ? (
     <OpenPost
+      onEditPost={onEditPost}
       onCommentAdded={onCommentAdded}
       onCommentDeleted={onCommentDeleted}
       onDeletePost={onDeletePost}

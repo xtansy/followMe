@@ -101,13 +101,12 @@ export const getMyPosts = async ({
   }
 };
 
-
 export const searchOnlyUserPublications = async ({
   text,
-  userId
+  userId,
 }: ISearchSoloParams): Promise<IPost[]> => {
   try {
-    const { data } = await api.get<IPost[]>("/api/publications/"+userId, {
+    const { data } = await api.get<IPost[]>("/api/publications/" + userId, {
       params: { text },
     });
 
@@ -132,7 +131,6 @@ export const searchPublications = async ({
     return Promise.reject(error);
   }
 };
-
 
 // export const getFile = async (fileId: string): Promise<IFileUrl> => {
 //   try {
