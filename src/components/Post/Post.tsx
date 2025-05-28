@@ -25,6 +25,7 @@ import { observer } from "mobx-react-lite";
 import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
+  API_URL,
   IFileUrl,
   createComment,
   deleteComment,
@@ -193,10 +194,14 @@ export const OpenPost: FC<IPostProps> = observer(
 
       const loadFiles = async () => {
         try {
+          console.log(post.files)
           setLoading(true);
-          const urls = await getPostFiles(post.files);
-          setFileUrls(urls);
-          currentUrls = urls;
+          const urls = post.files.map(file => ({
+            url: file.fileId,
+            mimeType: file.contentType
+          }));
+           setFileUrls(urls);
+           currentUrls = urls;
         } finally {
           setLoading(false);
         }
@@ -264,7 +269,7 @@ export const OpenPost: FC<IPostProps> = observer(
 
         return file.mimeType.startsWith("video") ? (
           <video
-            src={file.url}
+            src={API_URL+"/api/files/"+file.url}
             controls
             style={{
               width: "100%",
