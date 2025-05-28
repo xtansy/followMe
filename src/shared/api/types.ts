@@ -7,6 +7,15 @@ export interface IRegisterParams {
   password: string;
 }
 
+export interface ISearchParams {
+  text: string;
+}
+
+export interface ISearchSoloParams{
+  text: string;
+  userId: string | undefined;
+}
+
 export interface IPostParams {
   title: string;
   description: string;

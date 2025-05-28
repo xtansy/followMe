@@ -7,6 +7,7 @@ import { ISubscription, type IPost } from "../../shared/types/entityTypes";
 import { Post, CreatePostWidget } from "../../components";
 import {
   createPost,
+  searchPublications,
   getSubscriptions,
   type IPostParams,
   getLentaPosts,
@@ -149,18 +150,14 @@ export const Feed = observer(() => {
     });
   }, [userStore.userId]);
 
-  const filterPosts = useCallback((query: string, postsList: IPost[]) => {
+  const filterPosts = useCallback((query: string): Promise<IPost[]> => {
     if (!query.trim()) {
-      return postsList;
+      return Promise.resolve(posts);
     }
 
     const lowerCaseQuery = query.toLowerCase();
-    return postsList.filter(
-      (post) =>
-        post.title.toLowerCase().includes(lowerCaseQuery) ||
-        post.availableBody.toLowerCase().includes(lowerCaseQuery)
-    );
-  }, []);
+    return searchPublications({ text: lowerCaseQuery });
+  }, [posts]);
 
   const handleSearch = useCallback(
     (query: string) => {
@@ -168,13 +165,19 @@ export const Feed = observer(() => {
         clearTimeout(searchTimeout);
       }
 
-      const timeout = setTimeout(() => {
-        setFilteredPosts(filterPosts(query, posts));
+      const timeout = setTimeout(async () => {
+        try {
+          const filtered = await filterPosts(query);
+          setFilteredPosts(filtered);
+        } catch (err) {
+          console.error("Error during search:", err);
+          setFilteredPosts([]);
+        }
       }, 300);
 
       setSearchTimeout(timeout);
     },
-    [filterPosts, posts, searchTimeout]
+    [filterPosts, searchTimeout, posts]
   );
 
   const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,8 +187,24 @@ export const Feed = observer(() => {
   };
 
   useEffect(() => {
-    setFilteredPosts(filterPosts(searchQuery, posts));
-  }, [posts, searchQuery, filterPosts]);
+    if (!searchQuery.trim()) {
+      setFilteredPosts(posts);
+    } else {
+      const fetch = async () => {
+        try {
+          const filtered = await searchPublications({ text: searchQuery.toLowerCase() });
+          setFilteredPosts(filtered);
+        } catch (err) {
+          console.error("Search error", err);
+          setFilteredPosts([]);
+        }
+      };
+      fetch();
+    }
+  }, [posts, searchQuery]);
+
+
+
 
   return (
     <div className="feed-page">

@@ -12,6 +12,8 @@ import type {
   ILoginParams,
   IPostAvatarParams,
   IPostParams,
+  ISearchParams,
+  ISearchSoloParams,
   IRegisterParams,
   ISubscribeParams,
   ISubscriptionParams,
@@ -98,6 +100,39 @@ export const getMyPosts = async ({
     return Promise.reject(error);
   }
 };
+
+
+export const searchOnlyUserPublications = async ({
+  text,
+  userId
+}: ISearchSoloParams): Promise<IPost[]> => {
+  try {
+    const { data } = await api.get<IPost[]>("/api/publications"+userId, {
+      params: { text },
+    });
+
+    return data;
+  } catch (error) {
+    console.error("Search error:", error);
+    return Promise.reject(error);
+  }
+};
+
+export const searchPublications = async ({
+  text,
+}: ISearchParams): Promise<IPost[]> => {
+  try {
+    const { data } = await api.get<IPost[]>("/api/publications", {
+      params: { text },
+    });
+
+    return data;
+  } catch (error) {
+    console.error("Search error:", error);
+    return Promise.reject(error);
+  }
+};
+
 
 // export const getFile = async (fileId: string): Promise<IFileUrl> => {
 //   try {
@@ -336,7 +371,7 @@ export const editPost = async ({
   description,
 }: IEditPostParams): Promise<any> => {
   try {
-    const { data } = await api.patch(`/api/publications/${postId}`, {
+    const { data } = await api.put(`/api/publications/${postId}`, {
       title: null,
       description,
       requiredLevel: null,

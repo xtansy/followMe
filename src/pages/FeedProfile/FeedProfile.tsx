@@ -11,6 +11,7 @@ import {
 } from "../../components";
 import {
   createPost,
+  searchOnlyUserPublications,
   createSubscription,
   getMyPosts,
   getSubscriptions,
@@ -179,18 +180,16 @@ export const FeedProfile = observer(() => {
     );
   };
 
-  const filterPosts = useCallback((query: string, postsList: IPost[]) => {
+
+  const filterPosts = useCallback(async (query: string) => {
     if (!query.trim()) {
-      return postsList;
+      return posts;
     }
 
     const lowerCaseQuery = query.toLowerCase();
-    return postsList.filter(
-      (post) =>
-        post.title.toLowerCase().includes(lowerCaseQuery) ||
-        post.availableBody.toLowerCase().includes(lowerCaseQuery)
-    );
-  }, []);
+    return await searchOnlyUserPublications({ text: lowerCaseQuery, userId: userInfo?.userId });
+  }, [posts, userInfo]);
+
 
   const handleSearch = useCallback(
     (query: string) => {
@@ -198,13 +197,19 @@ export const FeedProfile = observer(() => {
         clearTimeout(searchTimeout);
       }
 
-      const timeout = setTimeout(() => {
-        setFilteredPosts(filterPosts(query, posts));
+      const timeout = setTimeout(async () => {
+        try {
+          const filtered = await filterPosts(query);
+          setFilteredPosts(filtered);
+        } catch (err) {
+          console.error("Error during search:", err);
+          setFilteredPosts([]);
+        }
       }, 300);
 
       setSearchTimeout(timeout);
     },
-    [filterPosts, posts, searchTimeout]
+    [filterPosts, searchTimeout]
   );
 
   const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -214,21 +219,25 @@ export const FeedProfile = observer(() => {
   };
 
   useEffect(() => {
-    setFilteredPosts(filterPosts(searchQuery, posts));
-  }, [posts, searchQuery, filterPosts]);
+    const load = async () => {
+      await fetchMyPosts(id);
+    };
+    load();
+  }, [id]);
 
   useEffect(() => {
-    setFilteredPosts(filterPosts(searchQuery, posts));
+    const applySearch = async () => {
+      const filtered = await filterPosts(searchQuery);
+      setFilteredPosts(filtered);
+    };
+    applySearch();
   }, [posts, searchQuery, filterPosts]);
+
 
   useEffect(() => {
     if (id) {
       getUser(id).then((user) => setUserInfo(user));
     }
-  }, [id]);
-
-  useEffect(() => {
-    fetchMyPosts(id);
   }, [id]);
 
   useEffect(() => {
@@ -264,9 +273,7 @@ export const FeedProfile = observer(() => {
 
       {/* Центральная колонка с постами */}
       <div style={{ maxWidth: 750, flexShrink: 0, width: "100%" }}>
-        {isOwnProfile && (
-          <>
-            <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 16 }}>
               <Input
                 placeholder="Поиск по названию или описанию"
                 prefix={<SearchOutlined />}
@@ -275,7 +282,9 @@ export const FeedProfile = observer(() => {
                 allowClear
                 style={{ borderRadius: 8 }}
               />
-            </div>
+        </div>
+        {isOwnProfile && (
+          <>
             <div style={{ marginBottom: "10px" }}>
               <CreatePostWidget
                 onSubmit={onSubmitPost}
