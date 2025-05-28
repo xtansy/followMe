@@ -107,7 +107,7 @@ export const searchOnlyUserPublications = async ({
   userId
 }: ISearchSoloParams): Promise<IPost[]> => {
   try {
-    const { data } = await api.get<IPost[]>("/api/publications"+userId, {
+    const { data } = await api.get<IPost[]>("/api/publications/"+userId, {
       params: { text },
     });
 
