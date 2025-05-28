@@ -28,56 +28,6 @@ import { SUBSCRIPTIONS_MOCK } from "../../shared/constants";
 import { CardDummy } from "../../shared/ui";
 import { SearchOutlined } from "@ant-design/icons";
 
-// const POSTS_MOCK: IPost[] = [
-//   {
-//     id: "1",
-//     title: "Доступный пост",
-//     availableBody: "это большой доступный всем пост...",
-//     likesCount: 42,
-//     liked: false,
-//     files: [],
-//     fullContent: true,
-//     user: {
-//       username: "andrey_dev",
-//       avatarFileId: IMAGE_URL_MOCK,
-//       userId: "213",
-//     },
-//     publishDate: "2025-05-20T17:34:56.767186909Z",
-//     subscription: {
-//       title: "string",
-//       description: "string",
-//       level: 1,
-//       price: {
-//         units: 0,
-//         nanos: 0,
-//       },
-//     },
-//   },
-//   {
-//     id: "2",
-//     title: "Закрытый пост",
-//     availableBody: "это маленький, недоступный никому закрытый пост",
-//     likesCount: 89,
-//     liked: false,
-//     files: [],
-//     user: {
-//       username: "hidden_author",
-//       avatarFileId: IMAGE_URL_MOCK,
-//       userId: "213",
-//     },
-//     publishDate: "2025-05-20T17:34:56.767186909Z",
-//     subscription: {
-//       title: "string",
-//       description: "string",
-//       level: 1,
-//       price: {
-//         units: 0,
-//         nanos: 0,
-//       },
-//     },
-//   },
-// ];
-
 export const FeedProfile = observer(() => {
   const { userStore } = useStore();
   const { id } = useParams();
@@ -90,6 +40,7 @@ export const FeedProfile = observer(() => {
   const [filteredPosts, setFilteredPosts] = useState<IPost[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchTimeout, setSearchTimeout] = useState<any>(null);
+  const [isLoadingPost, setIsLoadingPost] = useState(false);
 
   const isOwnProfile = userStore.userId === id;
 
@@ -120,9 +71,12 @@ export const FeedProfile = observer(() => {
   };
 
   const onSubmitPost = (newPost: IPostParams) => {
-    createPost(newPost).then(() => {
-      fetchMyPosts(id);
-    });
+    setIsLoadingPost(true);
+    createPost(newPost)
+      .then(() => {
+        fetchMyPosts(id);
+      })
+      .finally(() => setIsLoadingPost(false));
   };
 
   const onSubmitSubscription = async (subscription: ISubscriptionParams) => {
@@ -298,6 +252,7 @@ export const FeedProfile = observer(() => {
           <>
             <div style={{ marginBottom: "10px" }}>
               <CreatePostWidget
+                isLoading={isLoadingPost}
                 onSubmit={onSubmitPost}
                 subscriptions={subscriptions}
               />
