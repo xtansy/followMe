@@ -186,7 +186,7 @@ export const OpenPost: FC<IPostProps> = observer(
     const isOwnPost = userStore.userId === post.user.userId;
 
     const [fileUrls, setFileUrls] = useState<IFileUrl[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [mediaLoading, setMediaLoading] = useState(false); // переименовано из loading
     const [newComment, setNewComment] = useState("");
     const [commentLoading, setCommentLoading] = useState(false);
 
@@ -195,12 +195,12 @@ export const OpenPost: FC<IPostProps> = observer(
 
       const loadFiles = async () => {
         try {
-          setLoading(true);
+          setMediaLoading(true);
           const urls = await getPostFiles(post.files);
           setFileUrls(urls);
           currentUrls = urls;
         } finally {
-          setLoading(false);
+          setMediaLoading(false);
         }
       };
 
@@ -261,6 +261,21 @@ export const OpenPost: FC<IPostProps> = observer(
     };
 
     const renderPostMedia = () => {
+      if (mediaLoading) {
+        return (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: 200,
+            }}
+          >
+            <Spin />
+          </div>
+        );
+      }
+
       if (fileUrls.length === 1) {
         const file = fileUrls[0];
 
@@ -337,8 +352,6 @@ export const OpenPost: FC<IPostProps> = observer(
       );
     };
 
-    if (loading) return <Spin />;
-
     return (
       <Card
         className="post-card"
@@ -351,7 +364,7 @@ export const OpenPost: FC<IPostProps> = observer(
               avatarFileId={post.user.avatarFileId}
               publishDate={post.publishDate}
             />
-            {fileUrls.length > 0 && (
+            {post.files.length > 0 && (
               <Image.PreviewGroup>{renderPostMedia()}</Image.PreviewGroup>
             )}
           </>
