@@ -29,8 +29,7 @@ import {
   IFileUrl,
   createComment,
   deleteComment,
-  deleteMyPost,
-  getPostFiles,
+  deleteMyPost
 } from "../../shared/api";
 import { convertPriceToNumber } from "../../shared/lib";
 import { ISubscription, type IPost } from "../../shared/types";
