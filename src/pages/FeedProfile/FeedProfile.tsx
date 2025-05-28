@@ -165,6 +165,14 @@ export const FeedProfile = observer(() => {
     );
   };
 
+  const handleEditPost = (postId: string, newDescription: string) => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        post.id === postId ? { ...post, availableBody: newDescription } : post
+      )
+    );
+  };
+
   const onCommentDeleted = (postId: string, commentId: string) => {
     setPosts((prevPosts) =>
       prevPosts.map((post) =>
@@ -180,16 +188,20 @@ export const FeedProfile = observer(() => {
     );
   };
 
+  const filterPosts = useCallback(
+    async (query: string) => {
+      if (!query.trim()) {
+        return posts;
+      }
 
-  const filterPosts = useCallback(async (query: string) => {
-    if (!query.trim()) {
-      return posts;
-    }
-
-    const lowerCaseQuery = query.toLowerCase();
-    return await searchOnlyUserPublications({ text: lowerCaseQuery, userId: userInfo?.userId });
-  }, [posts, userInfo]);
-
+      const lowerCaseQuery = query.toLowerCase();
+      return await searchOnlyUserPublications({
+        text: lowerCaseQuery,
+        userId: userInfo?.userId,
+      });
+    },
+    [posts, userInfo]
+  );
 
   const handleSearch = useCallback(
     (query: string) => {
@@ -233,7 +245,6 @@ export const FeedProfile = observer(() => {
     applySearch();
   }, [posts, searchQuery, filterPosts]);
 
-
   useEffect(() => {
     if (id) {
       getUser(id).then((user) => setUserInfo(user));
@@ -274,14 +285,14 @@ export const FeedProfile = observer(() => {
       {/* Центральная колонка с постами */}
       <div style={{ maxWidth: 750, flexShrink: 0, width: "100%" }}>
         <div style={{ marginBottom: 16 }}>
-              <Input
-                placeholder="Поиск по названию или описанию"
-                prefix={<SearchOutlined />}
-                value={searchQuery}
-                onChange={onSearchChange}
-                allowClear
-                style={{ borderRadius: 8 }}
-              />
+          <Input
+            placeholder="Поиск по названию или описанию"
+            prefix={<SearchOutlined />}
+            value={searchQuery}
+            onChange={onSearchChange}
+            allowClear
+            style={{ borderRadius: 8 }}
+          />
         </div>
         {isOwnProfile && (
           <>
@@ -300,6 +311,7 @@ export const FeedProfile = observer(() => {
           >
             {filteredPosts.map((post) => (
               <Post
+                onEditPost={handleEditPost}
                 onCommentAdded={onCommentAdded}
                 onCommentDeleted={onCommentDeleted}
                 key={post.id}

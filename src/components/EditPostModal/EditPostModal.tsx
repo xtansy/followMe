@@ -11,7 +11,7 @@ interface IEditPostModalProps {
   post: IPost;
   subscriptions: ISubscription[];
   onCancel: () => void;
-  onSuccess: () => void;
+  onSuccess: (postId: string, description: string) => void;
 }
 
 export const EditPostModal: FC<IEditPostModalProps> = ({
@@ -46,7 +46,7 @@ export const EditPostModal: FC<IEditPostModalProps> = ({
       });
 
       messageApi.success("Пост успешно обновлен");
-      onSuccess();
+      onSuccess(post.id, values.description);
       onCancel();
     } catch {
       messageApi.error("Не удалось обновить пост");

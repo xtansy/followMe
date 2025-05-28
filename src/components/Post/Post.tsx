@@ -51,6 +51,7 @@ interface IPostProps {
   onDeletePost?: (id: string) => void;
   onCommentAdded?: (postId: string, newComment: IPost["comments"][0]) => void;
   onCommentDeleted?: (postId: string, commentId: string) => void;
+  onEditPost?: (postId: string, description: string) => void;
 }
 
 const AuthorHeader: FC<{
@@ -176,6 +177,7 @@ export const OpenPost: FC<IPostProps> = observer(
     onDeletePost,
     onCommentAdded,
     onCommentDeleted,
+    onEditPost,
   }) => {
     const navigate = useNavigate();
     const [messageApi, contextHolder] = message.useMessage();
@@ -378,8 +380,9 @@ export const OpenPost: FC<IPostProps> = observer(
             visible={!!editingPost}
             post={editingPost}
             onCancel={() => setEditingPost(null)}
-            onSuccess={() => {
+            onSuccess={(postId, description) => {
               setEditingPost(null);
+              onEditPost?.(postId, description);
             }}
           />
         )}
@@ -501,9 +504,11 @@ export const Post: FC<IPostProps> = ({
   onDeletePost,
   onCommentAdded,
   onCommentDeleted,
+  onEditPost,
 }) => {
   return post.fullContent ? (
     <OpenPost
+      onEditPost={onEditPost}
       onCommentAdded={onCommentAdded}
       onCommentDeleted={onCommentDeleted}
       onDeletePost={onDeletePost}
